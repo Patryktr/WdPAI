@@ -8,17 +8,16 @@ class UsersRepository extends Repository {
     {
         $query = $this->database->connect()->prepare(
             "
-            SELECT id, username, email, password, full_name, is_active, created_at
+            SELECT id, username, email, full_name, is_active, created_at
             FROM users;
             "
         );
         $query->execute();
 
-        $users = $query->fetchAll(PDO::FETCH_ASSOC);
-        return $users;
+        return $query->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getUserByEmail(string $email) 
+    public function getUserByEmail(string $email): ?array
     {
         $query = $this->database->connect()->prepare(
             "
@@ -31,28 +30,43 @@ class UsersRepository extends Repository {
         $query->execute();
 
         $user = $query->fetch(PDO::FETCH_ASSOC);
-        return $user;
+        return $user ?: null;
+    }
+
+    public function getUserById(int $id): ?array
+    {
+        $query = $this->database->connect()->prepare(
+            "
+            SELECT id, username, email, full_name, is_active, created_at
+            FROM users
+            WHERE id = :id
+            "
+        );
+
+        $query->bindValue(':id', $id, PDO::PARAM_INT);
+        $query->execute();
+
+        $user = $query->fetch(PDO::FETCH_ASSOC);
+        return $user ?: null;
     }
 
     public function createUser(
         string $username,
         string $email,
-        string $hashedPassword,
-        string $fullName,
-        bool $isActive = true
+        string $passwordHash,
+        string $fullName
     ): void {
         $query = $this->database->connect()->prepare(
             "
-            INSERT INTO users (username, email, password, full_name, is_active)
-            VALUES (:username, :email, :password, :full_name, :is_active);
+            INSERT INTO users (username, email, password, full_name)
+            VALUES (:username, :email, :password, :full_name);
             "
         );
 
         $query->bindParam(':username', $username);
         $query->bindParam(':email', $email);
-        $query->bindParam(':password', $hashedPassword);
+        $query->bindParam(':password', $passwordHash);
         $query->bindParam(':full_name', $fullName);
-        $query->bindValue(':is_active', $isActive, PDO::PARAM_BOOL);
         $query->execute();
     }
 }

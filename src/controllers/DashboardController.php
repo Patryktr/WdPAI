@@ -7,11 +7,11 @@ class DashboardController extends AppController {
 
     public function index() {
         // TODO pobieranie danych z bazy
-        // wstawianie zmiennych na widok
+        // wstawianie zmiennych do widoku
         $title = "INDEX";
         $usersRepository = new UsersRepository();
         $users = $usersRepository->getUsers();
 
-        return $this->render("index", ["title" => $title, "users" => $users]);
+        $this->render("index", ["title" => $title, "users" => $users]);
     }
 }

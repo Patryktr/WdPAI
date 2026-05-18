@@ -5,12 +5,12 @@ require_once 'AppController.php';
 class SecurityController extends AppController {
 
     public function login() {
-        // TODO sprawdzeie czy user istnieje
+        // TODO sprawdzenie, czy użytkownik istnieje
 
-        return $this->render("login");
+        $this->render("login");
     }
 
     public function register() {
-        return $this->render("register");
+        $this->render("register");
     }
 }

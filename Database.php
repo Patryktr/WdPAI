@@ -1,14 +1,13 @@
 <?php
-// .env 
+
 require_once "config.php";
 
-// singleton 
 class Database {
-    private $username;
-    private $password;
-    private $host;
-    private $database;
-    // private $conn;
+    private string $username;
+    private string $password;
+    private string $host;
+    private string $database;
+    private ?PDO $connection = null;
 
     public function __construct()
     {
@@ -18,19 +17,25 @@ class Database {
         $this->database = DATABASE;
     }
 
-    public function connect()
+    public function connect(): PDO
     {
+        if ($this->connection !== null) {
+            return $this->connection;
+        }
+
         try {
-            $conn = new PDO(
-                "pgsql:host=$this->host;port=5432;dbname=$this->database",
+            $this->connection = new PDO(
+                "pgsql:host=$this->host;port=5432;dbname=$this->database;sslmode=prefer",
                 $this->username,
                 $this->password,
-                ["sslmode"  => "prefer"]
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                ]
             );
 
-            // set the PDO error mode to exception
-            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            return $conn;
+            return $this->connection;
         }
         catch(PDOException $e) {
             // change to error page e.g. 404 not found etc.
@@ -38,7 +43,8 @@ class Database {
         }
     }
 
-    public function disconnect() {
-        // $this->conn = null;
+    public function disconnect(): void
+    {
+        $this->connection = null;
     }
 }

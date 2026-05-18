@@ -1,38 +1,34 @@
 <?php
 
-
 class AppController {
-    protected function isGet(): bool
+    protected function render(string $view, array $params = []): void
     {
-        return $_SERVER["REQUEST_METHOD"] === 'GET';
+        $viewPath = __DIR__.'/../../public/views/'.$view.'.html';
+        $notFoundPath = __DIR__.'/../../public/views/404.html';
+
+        if (!file_exists($viewPath)) {
+            $viewPath = $notFoundPath;
+        }
+
+        extract($params);
+        ob_start();
+        include $viewPath;
+        echo ob_get_clean();
+    }
+
+    protected function redirect(string $path): void
+    {
+        header("Location: ".$path);
+        exit();
     }
 
     protected function isPost(): bool
     {
         return $_SERVER["REQUEST_METHOD"] === 'POST';
     }
- 
-    protected function render(string $template = null, array $variables = [])
+
+    protected function isGet(): bool
     {
-        $templatePath = __DIR__.'/../../public/views/'. $template.'.html';
-        $templatePath404 = __DIR__.'/../../public/views/404.html';
-        $output = "";
-                 
-        if(file_exists($templatePath)){
-            extract($variables);
-            // ["tab_name" => $title]
-
-            // $tab_name = $title
-
-            ob_start();
-            include $templatePath;
-            $output = ob_get_clean();
-        } else {
-            ob_start();
-            include $templatePath404;
-            $output = ob_get_clean();
-        }
-        echo $output;
+        return $_SERVER["REQUEST_METHOD"] === 'GET';
     }
-
 }
