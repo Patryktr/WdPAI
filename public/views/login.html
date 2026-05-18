@@ -1,25 +1,47 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <?php include __DIR__ . '/partials/head.html'; ?>
-    
-  </head>
-  <body>
-    <form method="POST" action="\login">
-      <h1>LOGIN</h1>
+<section class="auth-card">
+  <div class="auth-brand">
+    <div class="auth-logo">
+      <i class="fa-solid fa-wallet"></i>
+    </div>
+    <span>Luminous Wealth</span>
+    <p>Access your digital vault with precision.</p>
+  </div>
 
-      <?php if(isset($messages)): ?>
+  <?php if(isset($messages)): ?>
+    <p class="messages">
+      <?= $messages ?>
+    </p>
+  <?php endif; ?>
 
-      <p class="messages">
-        <?= $messages ?>
-      </p>
+  <form class="auth-form" method="POST" action="/login">
+    <div class="form-group">
+      <label for="login-email">Email address</label>
+      <input id="login-email" name="email" type="email" placeholder="name@wealth.com" autocomplete="email" />
+    </div>
 
-      <?php endif; ?>
-      <input name="email" type="email" placeholder="Twój email" />
-      <input name="password" type="password" placeholder="Twoje hasło" />
-      <button type="submit">LOGIN</button>
+    <div class="form-group">
+      <div class="label-row">
+        <label for="login-password">Password</label>
+        <a href="/login">Forgot?</a>
+      </div>
+      <input id="login-password" name="password" type="password" placeholder="********" autocomplete="current-password" />
+    </div>
 
-      <a href="/register">zarejestruj się!</a>
-    </form>
-  </body>
-</html>
+    <button class="btn btn-primary" type="submit">Log in <span aria-hidden="true">-&gt;</span></button>
+  </form>
+
+  <p class="auth-switch">
+    New to the vault?
+    <a href="/register">Create Account</a>
+  </p>
+
+  <div class="auth-security">
+    <div class="auth-divider">
+      <span>Secure biometric encryption</span>
+    </div>
+    <div class="auth-biometrics">
+      <span>TouchID</span>
+      <span>FaceID</span>
+    </div>
+  </div>
+</section>

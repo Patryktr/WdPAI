@@ -2,7 +2,7 @@
 
 ## Aktualny stan projektu
 
-Projekt jest prostą aplikacją PHP MVC uruchamianą w Dockerze. Obecnie zawiera podstawowy routing, kontrolery, repozytoria, widoki HTML/PHP, konfiguracje nginx/php-fpm/PostgreSQL oraz podstawowe style CSS.
+Projekt jest prostą aplikacją PHP MVC uruchamianą w Dockerze. Obecnie zawiera routing oparty o mapę ścieżek, kontrolery, repozytoria, widoki HTML/PHP, wspólne layouty, konfiguracje nginx/php-fpm/PostgreSQL oraz podstawowe style CSS.
 
 ## Środowisko Docker
 
@@ -39,18 +39,31 @@ Projekt jest prostą aplikacją PHP MVC uruchamianą w Dockerze. Obecnie zawiera
 |   |   `-- main.css
 |   `-- views
 |       |-- 404.html
+|       |-- categories.html
 |       |-- dashboard.html
+|       |-- expense-create.html
+|       |-- expenses.html
 |       |-- index.html
 |       |-- login.html
+|       |-- logout.html
+|       |-- profile.html
 |       |-- register.html
+|       |-- statistics.html
+|       |-- layouts
+|       |   |-- app.php
+|       |   `-- auth.php
 |       `-- partials
 |           |-- head.html
 |           `-- nav.html
 `-- src
     |-- controllers
     |   |-- AppController.php
+    |   |-- CategoriesController.php
     |   |-- DashboardController.php
-    |   `-- SecurityController.php
+    |   |-- ExpensesController.php
+    |   |-- ProfileController.php
+    |   |-- SecurityController.php
+    |   `-- StatisticsController.php
     `-- repositories
         |-- Repository.php
         `-- UsersRepository.php
@@ -59,9 +72,12 @@ Projekt jest prostą aplikacją PHP MVC uruchamianą w Dockerze. Obecnie zawiera
 ## Główne elementy aplikacji
 
 - `public/index.php` odbiera żądanie HTTP i przekazuje ścieżkę do `Routing::run()`.
-- `Routing.php` definiuje aktualne trasy i wybiera odpowiedni kontroler oraz akcję.
-- `src/controllers/AppController.php` zawiera wspólną logikę kontrolerów, m.in. `render()`, `isGet()` i `isPost()`.
-- `src/controllers/SecurityController.php` renderuje widoki logowania i rejestracji.
+- `Routing.php` mapuje ścieżki na kontrolery i akcje.
+- `src/controllers/AppController.php` zawiera wspólną logikę kontrolerów, m.in. `render()`, `redirect()`, `isGet()` i `isPost()`.
+- `AppController::render()` ładuje widok z `public/views`, przechwytuje jego treść do `$content`, a następnie osadza ją w layoucie.
+- `public/views/layouts/app.php` jest wspólnym layoutem dla dashboardu i przyszłych stron aplikacji.
+- `public/views/layouts/auth.php` jest uproszczonym layoutem dla logowania i rejestracji.
+- `src/controllers/SecurityController.php` renderuje widoki logowania, rejestracji i placeholder wylogowania.
 - `src/controllers/DashboardController.php` pobiera użytkowników przez `UsersRepository` i renderuje widok `index`.
 - `Database.php` tworzy połączenie PDO z PostgreSQL.
 - `src/repositories/UsersRepository.php` zawiera metody dostępu do tabeli `users`.
@@ -73,28 +89,36 @@ Projekt jest prostą aplikacją PHP MVC uruchamianą w Dockerze. Obecnie zawiera
 | `/` | `SecurityController` | `login` | `public/views/login.html` |
 | `/login` | `SecurityController` | `login` | `public/views/login.html` |
 | `/register` | `SecurityController` | `register` | `public/views/register.html` |
+| `/logout` | `SecurityController` | `logout` | `public/views/logout.html` |
 | `/dashboard` | `DashboardController` | `index` | `public/views/index.html` |
+| `/expenses` | `ExpensesController` | `index` | `public/views/expenses.html` |
+| `/expenses/create` | `ExpensesController` | `create` | `public/views/expense-create.html` |
+| `/categories` | `CategoriesController` | `index` | `public/views/categories.html` |
+| `/statistics` | `StatisticsController` | `index` | `public/views/statistics.html` |
+| `/profile` | `ProfileController` | `index` | `public/views/profile.html` |
 | inna ścieżka | brak | brak | `public/views/404.html` |
+
+## Widoki auth
+
+- `public/views/login.html` zawiera formularz logowania w stylu dark fintech.
+- Formularz logowania wysyła `POST` na `/login` i ma pola `email`, `password`.
+- `public/views/register.html` zawiera formularz rejestracji w stylu dark fintech.
+- Formularz rejestracji wysyła `POST` na `/register` i ma pola `username`, `full_name`, `email`, `password`, `password2`.
+- Style widoków auth znajdują się w `public/styles/main.css` i są ograniczone klasą `auth-page`.
 
 ## Znane problemy
 
-1. Niezgodność tabeli `users` z `UsersRepository`
+1. Brak logiki logowania i rejestracji
 
-   Naprawione: tabela `users` oraz `UsersRepository` uzywaja wspolnego modelu: `id`, `username`, `email`, `password`, `full_name`, `is_active`, `created_at`.
+   `SecurityController` aktualnie renderuje formularze, ale nie obsługuje jeszcze danych z formularzy, walidacji, sprawdzania użytkownika w bazie ani zapisu nowego konta.
 
-   `UsersRepository::createUser()` zapisuje teraz tylko kolumny obecne w schemacie tabeli.
-
-2. Brak logiki logowania i rejestracji
-
-   `SecurityController` aktualnie tylko renderuje formularze `login` i `register`. Nie ma jeszcze obsługi danych z formularzy, walidacji, sprawdzania użytkownika w bazie ani zapisu nowego konta.
-
-3. Brak sesji
+2. Brak sesji
 
    Projekt nie zawiera jeszcze mechanizmu sesji. Nie ma `session_start()`, zapisu zalogowanego użytkownika do sesji ani ochrony tras wymagających logowania.
 
-4. Problemy z kodowaniem polskich znaków
+3. Placeholdery nowych sekcji
 
-   W części plików było widać uszkodzone polskie znaki, np. `Twój email`, `hasło`, `zarejestruj się` oraz podobne znaki w komentarzach. Sugerowało to problem z kodowaniem plików lub sposobem ich odczytu/zapisu.
+   Trasy `/logout`, `/expenses`, `/expenses/create`, `/categories`, `/statistics` i `/profile` mają przygotowane kontrolery oraz widoki, ale nie zawierają jeszcze logiki biznesowej.
 
 ## Uwagi
 

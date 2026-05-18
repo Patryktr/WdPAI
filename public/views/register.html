@@ -1,26 +1,52 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <?php include __DIR__ . '/partials/head.html'; ?>
-  </head>
-  <body>
-    <form method="POST" action="\register">
-      <h1>REGISTER FORM</h1>
+<section class="auth-card auth-card-wide">
+  <div class="auth-brand">
+    <div class="auth-logo">
+      <i class="fa-solid fa-wallet"></i>
+    </div>
+    <span>Luminous Wealth</span>
+    <p>Create your digital vault with precision.</p>
+  </div>
 
-      <?php if(isset($messages)): ?>
+  <h1>Utw&oacute;rz konto</h1>
+  <p class="auth-copy">Za&#322;&oacute;&#380; profil i przygotuj miejsce na swoje kategorie, wydatki oraz statystyki.</p>
 
-      <p class="messages">
-        <?= $messages ?>
-      </p>
+  <?php if(isset($messages)): ?>
+    <p class="messages">
+      <?= $messages ?>
+    </p>
+  <?php endif; ?>
 
-      <?php endif; ?>
-      <input name="email" type="email" placeholder="Twój email" />
-      <input name="password" type="password" placeholder="Twoje hasło" />
-      <input name="password2" type="password" placeholder="Powtórz hasło" />
+  <form class="auth-form" method="POST" action="/register">
+    <div class="form-group">
+      <label for="register-username">Nazwa u&#380;ytkownika</label>
+      <input id="register-username" name="username" type="text" placeholder="np. patryk" autocomplete="username" />
+    </div>
 
-      <input name="username" type="text" placeholder="Nazwa uzytkownika" />
-      <input name="full_name" type="text" placeholder="Imie i nazwisko" />
-      <button type="submit">REGISTER</button>
-    </form>
-  </body>
-</html>
+    <div class="form-group">
+      <label for="register-full-name">Imi&#281; i nazwisko</label>
+      <input id="register-full-name" name="full_name" type="text" placeholder="Jan Kowalski" autocomplete="name" />
+    </div>
+
+    <div class="form-group">
+      <label for="register-email">Email</label>
+      <input id="register-email" name="email" type="email" placeholder="twoj@email.pl" autocomplete="email" />
+    </div>
+
+    <div class="form-group">
+      <label for="register-password">Has&#322;o</label>
+      <input id="register-password" name="password" type="password" placeholder="********" autocomplete="new-password" />
+    </div>
+
+    <div class="form-group">
+      <label for="register-password2">Powt&oacute;rz has&#322;o</label>
+      <input id="register-password2" name="password2" type="password" placeholder="********" autocomplete="new-password" />
+    </div>
+
+    <button class="btn btn-primary" type="submit">Utw&oacute;rz konto</button>
+  </form>
+
+  <p class="auth-switch">
+    Masz ju&#380; konto?
+    <a href="/login">Zaloguj si&#281;</a>
+  </p>
+</section>
