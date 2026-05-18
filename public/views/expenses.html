@@ -1,2 +1,92 @@
-<h1>Expenses</h1>
-<p>Expenses list will be added later.</p>
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Wallet overview</p>
+    <h1>Expenses</h1>
+  </div>
+  <a class="app-button app-button-primary" href="/expenses/create">Add expense</a>
+</section>
+
+<?php if (!empty($flash)): ?>
+  <div class="alert alert-<?= $flash['type']; ?>">
+    <?= $flash['message']; ?>
+  </div>
+<?php endif; ?>
+
+<form class="filters-bar" method="GET" action="/expenses">
+  <input name="search" type="search" placeholder="Search expenses" value="<?= htmlspecialchars($filters['search'] ?? ''); ?>" />
+
+  <select name="category_id">
+    <option value="">All categories</option>
+    <?php foreach ($categories as $category): ?>
+      <option value="<?= $category['id']; ?>" <?= (string)($filters['category_id'] ?? '') === (string)$category['id'] ? 'selected' : ''; ?>>
+        <?= htmlspecialchars($category['name']); ?>
+      </option>
+    <?php endforeach; ?>
+  </select>
+
+  <input name="date_from" type="date" value="<?= htmlspecialchars($filters['date_from'] ?? ''); ?>" />
+  <input name="date_to" type="date" value="<?= htmlspecialchars($filters['date_to'] ?? ''); ?>" />
+
+  <button class="app-button" type="submit">Filter</button>
+  <a class="app-button app-button-muted" href="/expenses">Reset</a>
+</form>
+
+<?php if (empty($expenses)): ?>
+  <div class="empty-state">
+    <h2>No expenses found</h2>
+    <p>Add your first expense or change filters.</p>
+  </div>
+<?php else: ?>
+  <table class="expenses-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Category</th>
+        <th>Date</th>
+        <th>Note</th>
+        <th class="amount-cell">Amount</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php foreach ($expenses as $expense): ?>
+        <tr>
+          <td><?= htmlspecialchars($expense['name']); ?></td>
+          <td><?= htmlspecialchars($expense['category_name']); ?></td>
+          <td><?= htmlspecialchars($expense['expense_date']); ?></td>
+          <td><?= htmlspecialchars($expense['note'] ?? ''); ?></td>
+          <td class="amount-cell"><?= number_format((float)$expense['amount'], 2); ?></td>
+          <td class="actions-cell">
+            <a class="icon-action" href="/expenses/edit?id=<?= $expense['id']; ?>">Edit</a>
+            <form method="POST" action="/expenses/delete" onsubmit="return confirm('Delete this expense?');">
+              <input type="hidden" name="id" value="<?= $expense['id']; ?>" />
+              <button class="icon-action danger" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+      <?php endforeach; ?>
+    </tbody>
+  </table>
+
+  <div class="expenses-cards">
+    <?php foreach ($expenses as $expense): ?>
+      <article class="expense-card">
+        <div>
+          <h2><?= htmlspecialchars($expense['name']); ?></h2>
+          <p><?= htmlspecialchars($expense['category_name']); ?> · <?= htmlspecialchars($expense['expense_date']); ?></p>
+        </div>
+        <strong><?= number_format((float)$expense['amount'], 2); ?></strong>
+        <?php if (!empty($expense['note'])): ?>
+          <p><?= htmlspecialchars($expense['note']); ?></p>
+        <?php endif; ?>
+        <div class="card-actions">
+          <a class="icon-action" href="/expenses/edit?id=<?= $expense['id']; ?>">Edit</a>
+          <form method="POST" action="/expenses/delete" onsubmit="return confirm('Delete this expense?');">
+            <input type="hidden" name="id" value="<?= $expense['id']; ?>" />
+            <button class="icon-action danger" type="submit">Delete</button>
+          </form>
+        </div>
+      </article>
+    <?php endforeach; ?>
+  </div>
+<?php endif; ?>

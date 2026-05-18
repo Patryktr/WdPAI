@@ -38,6 +38,14 @@ class Routing {
             "controller" => "ExpensesController",
             "action" => "create",
         ],
+        "expenses/edit" => [
+            "controller" => "ExpensesController",
+            "action" => "edit",
+        ],
+        "expenses/delete" => [
+            "controller" => "ExpensesController",
+            "action" => "delete",
+        ],
         "categories" => [
             "controller" => "CategoriesController",
             "action" => "index",

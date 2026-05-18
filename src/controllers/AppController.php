@@ -1,12 +1,22 @@
 <?php
 
 class AppController {
+    public function __construct()
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+    }
+
     protected function render(string $view, array $params = []): void
     {
+        $params['flash'] = $params['flash'] ?? $this->getFlash();
         $viewPath = __DIR__.'/../../public/views/'.$view.'.html';
         $notFoundPath = __DIR__.'/../../public/views/404.html';
         $layout = $params["_layout"] ?? "app";
+        $bodyClass = $params["_body_class"] ?? "";
         unset($params["_layout"]);
+        unset($params["_body_class"]);
 
         if (!file_exists($viewPath)) {
             $viewPath = $notFoundPath;
@@ -47,5 +57,30 @@ class AppController {
     protected function isGet(): bool
     {
         return $_SERVER["REQUEST_METHOD"] === 'GET';
+    }
+
+    protected function currentUserId(): int
+    {
+        return (int) ($_SESSION['user_id'] ?? 1);
+    }
+
+    protected function setFlash(string $type, string $message): void
+    {
+        $_SESSION['flash'] = [
+            'type' => $type,
+            'message' => $message,
+        ];
+    }
+
+    private function getFlash(): ?array
+    {
+        if (empty($_SESSION['flash'])) {
+            return null;
+        }
+
+        $flash = $_SESSION['flash'];
+        unset($_SESSION['flash']);
+
+        return $flash;
     }
 }
