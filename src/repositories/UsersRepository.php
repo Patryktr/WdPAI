@@ -8,7 +8,8 @@ class UsersRepository extends Repository {
     {
         $query = $this->database->connect()->prepare(
             "
-            SELECT * FROM users;
+            SELECT id, username, email, password, full_name, is_active, created_at
+            FROM users;
             "
         );
         $query->execute();
@@ -17,10 +18,13 @@ class UsersRepository extends Repository {
         return $users;
     }
 
-  public function getUserByEmail(string $email) {
+    public function getUserByEmail(string $email) 
+    {
         $query = $this->database->connect()->prepare(
             "
-            SELECT * FROM users WHERE email = :email
+            SELECT id, username, email, password, full_name, is_active, created_at
+            FROM users
+            WHERE email = :email
             "
         );
         $query->bindParam(':email', $email);
@@ -31,24 +35,24 @@ class UsersRepository extends Repository {
     }
 
     public function createUser(
+        string $username,
         string $email,
         string $hashedPassword,
-        string $firstname,
-        string $lastname,
-        string $bio = ''
-    ) {
+        string $fullName,
+        bool $isActive = true
+    ): void {
         $query = $this->database->connect()->prepare(
             "
-            INSERT INTO users (firstname, lastname, email, password, bio)
-            VALUES (?, ?, ?, ?, ?);
+            INSERT INTO users (username, email, password, full_name, is_active)
+            VALUES (:username, :email, :password, :full_name, :is_active);
             "
         );
-        $query->execute([
-            $firstname,
-            $lastname,
-            $email, 
-            $hashedPassword,
-            $bio
-        ]);
+
+        $query->bindParam(':username', $username);
+        $query->bindParam(':email', $email);
+        $query->bindParam(':password', $hashedPassword);
+        $query->bindParam(':full_name', $fullName);
+        $query->bindValue(':is_active', $isActive, PDO::PARAM_BOOL);
+        $query->execute();
     }
 }
