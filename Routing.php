@@ -2,52 +2,67 @@
 
 require_once __DIR__.'/src/controllers/SecurityController.php';
 require_once __DIR__.'/src/controllers/DashboardController.php';
+require_once __DIR__.'/src/controllers/ExpensesController.php';
+require_once __DIR__.'/src/controllers/CategoriesController.php';
+require_once __DIR__.'/src/controllers/StatisticsController.php';
+require_once __DIR__.'/src/controllers/ProfileController.php';
 
-// TODO musimy zapewnić, że utworzony
-// obiekt kontrolera ma tylko jedną instancję - SINGLETON
-
-// TODO 2 /dashboard -- wszystkie dane
-// /dashboard/12234 -- wyciągnie nam jakiś element o wskazanym ID 12234
-// REGEX
 class Routing {
 
-    public static $routes = [
-        "login" => [
-            "controller" => "SecurityController",
-            "action" => "login"
-        ],
-        "dashboard" => [
-            "controller" => "DashboardController",
-            "action" => "index"
-        ],
+    private static array $routes = [
         "" => [
             "controller" => "SecurityController",
-            "action" => "login"
+            "action" => "login",
+        ],
+        "login" => [
+            "controller" => "SecurityController",
+            "action" => "login",
         ],
         "register" => [
             "controller" => "SecurityController",
-            "action" => "register"
+            "action" => "register",
+        ],
+        "logout" => [
+            "controller" => "SecurityController",
+            "action" => "logout",
+        ],
+        "dashboard" => [
+            "controller" => "DashboardController",
+            "action" => "index",
+        ],
+        "expenses" => [
+            "controller" => "ExpensesController",
+            "action" => "index",
+        ],
+        "expenses/create" => [
+            "controller" => "ExpensesController",
+            "action" => "create",
+        ],
+        "categories" => [
+            "controller" => "CategoriesController",
+            "action" => "index",
+        ],
+        "statistics" => [
+            "controller" => "StatisticsController",
+            "action" => "index",
+        ],
+        "profile" => [
+            "controller" => "ProfileController",
+            "action" => "index",
         ],
     ];
 
-    public static function run(string $path) {
-        // TODO sprawdzać za pomocą array_key_exists
-        switch($path) {
-            case 'dashboard':
-            case '':
-            case 'login':
-            case 'register':
-                $controller = Routing::$routes[$path]["controller"];
-                $action = Routing::$routes[$path]["action"];
-
-                $controllerObj = new $controller;
-                $id = null;
-
-                $controllerObj->$action($id);
-                break; 
-            default:
-                include 'public/views/404.html';
-                break;
+    public static function run(string $path): void
+    {
+        if (!array_key_exists($path, self::$routes)) {
+            include __DIR__.'/public/views/404.html';
+            return;
         }
+
+        $controller = self::$routes[$path]["controller"];
+        $action = self::$routes[$path]["action"];
+
+        $controllerObject = new $controller();
+        $controllerObject->$action();
     }
 }
