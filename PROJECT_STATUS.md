@@ -4,7 +4,7 @@
 
 Projekt jest prostą aplikacją PHP MVC uruchamianą w Dockerze. Obecnie zawiera routing oparty o mapę ścieżek, kontrolery, repozytoria, widoki HTML/PHP, wspólne layouty, konfiguracje nginx/php-fpm/PostgreSQL oraz podstawowe style CSS.
 
-Aktualny etap prac obejmuje działający CRUD wydatków, przygotowane widoki logowania/rejestracji oraz placeholdery dla przyszłych sekcji aplikacji. Logika pełnego logowania, rejestracji i ochrony sesją nie została jeszcze zaimplementowana.
+Aktualny etap prac obejmuje działający CRUD wydatków, obsługę rejestracji i logowania użytkownika, sesję PHP, wylogowanie oraz ochronę stron wymagających zalogowania. Część sekcji aplikacji nadal pozostaje placeholderami do dalszej rozbudowy.
 
 ## Środowisko Docker
 
@@ -75,13 +75,13 @@ Aktualny etap prac obejmuje działający CRUD wydatków, przygotowane widoki log
 
 ## Główne elementy aplikacji
 
-- `public/index.php` odbiera żądanie HTTP i przekazuje ścieżkę do `Routing::run()`.
+- `public/index.php` uruchamia sesję PHP z bezpiecznymi parametrami cookie, odbiera żądanie HTTP i przekazuje ścieżkę do `Routing::run()`.
 - `Routing.php` mapuje ścieżki na kontrolery i akcje.
-- `src/controllers/AppController.php` zawiera wspólną logikę kontrolerów: `render()`, `redirect()`, `isGet()`, `isPost()`, obsługę sesji i komunikaty flash.
+- `src/controllers/AppController.php` zawiera wspólną logikę kontrolerów: `render()`, `redirect()`, `isGet()`, `isPost()`, `requireLogin()`, obsługę sesji i komunikaty flash.
 - `AppController::render()` ładuje widok z `public/views`, przechwytuje jego treść do `$content`, a następnie osadza ją w wybranym layoucie.
 - `public/views/layouts/app.php` jest wspólnym layoutem dla dashboardu i stron aplikacji oraz ładuje `/styles/main.css?v=app-expenses-2`.
 - `public/views/layouts/auth.php` jest layoutem dla logowania i rejestracji.
-- `src/controllers/SecurityController.php` renderuje widoki logowania, rejestracji i placeholder wylogowania.
+- `src/controllers/SecurityController.php` obsługuje logowanie, rejestrację, zapis użytkownika, weryfikację hasła, zapis danych użytkownika do sesji i wylogowanie.
 - `src/controllers/ExpensesController.php` obsługuje listę, dodawanie, edycję i usuwanie wydatków.
 - `Database.php` tworzy połączenie PDO z PostgreSQL.
 
@@ -92,7 +92,7 @@ Aktualny etap prac obejmuje działający CRUD wydatków, przygotowane widoki log
 | `/` | `SecurityController` | `login` | `public/views/login.html` |
 | `/login` | `SecurityController` | `login` | `public/views/login.html` |
 | `/register` | `SecurityController` | `register` | `public/views/register.html` |
-| `/logout` | `SecurityController` | `logout` | `public/views/logout.html` |
+| `/logout` | `SecurityController` | `logout` | wyczyszczenie sesji i redirect na `/login` |
 | `/dashboard` | `DashboardController` | `index` | `public/views/index.html` |
 | `/expenses` | `ExpensesController` | `index` | lista wydatków |
 | `/expenses/create` | `ExpensesController` | `create` | `public/views/expense-form.html` |
@@ -139,7 +139,49 @@ Widok `/expenses` zawiera:
 - filtr daty od/do
 - formularz dodawania/edycji w stylu dark fintech inspirowany widokiem `New Expense`
 
-Do czasu wdrożenia pełnego logowania aplikacja używa `$_SESSION['user_id']`, a jeśli go nie ma, korzysta z tymczasowego użytkownika demo o ID `1`.
+CRUD wydatków używa `$_SESSION['user_id']` jako identyfikatora aktualnie zalogowanego użytkownika. Strony wydatków są chronione przez `requireLogin()`.
+
+## Logowanie, rejestracja i sesja
+
+Zaimplementowane funkcje:
+
+- walidacja formularza rejestracji
+- sprawdzanie, czy email jest już zajęty
+- zapis nowego użytkownika przez `UsersRepository::createUser()`
+- hashowanie hasła przez `password_hash(..., PASSWORD_BCRYPT)`
+- walidacja formularza logowania
+- pobranie użytkownika przez `UsersRepository::getUserByEmail()`
+- sprawdzanie aktywności użytkownika przez `is_active`
+- weryfikacja hasła przez `password_verify()`
+- regeneracja ID sesji po poprawnym logowaniu
+- zapis danych użytkownika do `$_SESSION`
+- wylogowanie przez wyczyszczenie `$_SESSION`, usunięcie cookie sesyjnego i `session_destroy()`
+
+Sesja startuje w `public/index.php` przed routingiem. Cookie sesyjne ma ustawione:
+
+- `httponly: true`
+- `samesite: Lax`
+- `secure: false` dla lokalnego HTTP w Dockerze
+
+Po poprawnym logowaniu ustawiane są klucze sesji:
+
+- `user_id`
+- `user_email`
+- `username`
+- `is_logged_in`
+
+Hasło nie jest zapisywane w sesji ani przekazywane do widoku.
+
+Strony chronione przez `requireLogin()`:
+
+- `/dashboard`
+- `/expenses`
+- `/expenses/create`
+- `/expenses/edit`
+- `/expenses/delete`
+- `/categories`
+- `/statistics`
+- `/profile`
 
 ## Baza danych
 
@@ -187,21 +229,17 @@ Repozytoria używają zapytań przygotowanych PDO.
 
 ## Znane problemy / następne kroki
 
-1. Brak pełnej logiki logowania i rejestracji
-
-   `SecurityController` renderuje formularze, ale nie obsługuje jeszcze danych z formularzy, walidacji, sprawdzania użytkownika w bazie ani zapisu nowego konta.
-
-2. Sesja jest tymczasowa
-
-   `AppController` uruchamia sesję i potrafi odczytać `user_id`, ale pełny zapis zalogowanego użytkownika do sesji nie jest jeszcze zaimplementowany. CRUD wydatków używa fallbacku na użytkownika demo `1`.
-
-3. Kategorie są tylko odczytywane
+1. Kategorie są tylko odczytywane
 
    CRUD kategorii nie jest jeszcze zaimplementowany. Kategorie demo są tworzone w bazie.
 
-4. Dashboard jest tymczasowy
+2. Dashboard jest tymczasowy
 
    `/dashboard` nadal pokazuje prostą listę użytkowników i nie jest jeszcze właściwym panelem finansowym.
+
+3. Brak testów automatycznych dla auth
+
+   Logowanie, rejestracja, sesja i ochrona tras wymagają jeszcze pokrycia testami lub ręcznej checklisty regresji.
 
 ## Uwagi
 

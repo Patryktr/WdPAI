@@ -58,6 +58,12 @@ class SecurityController extends AppController {
             return;
         }
 
+        session_regenerate_id(true);
+        $_SESSION['user_id'] = (int) $user['id'];
+        $_SESSION['user_email'] = $user['email'];
+        $_SESSION['username'] = $user['username'];
+        $_SESSION['is_logged_in'] = true;
+
         $this->redirect('/dashboard');
     }
 
@@ -176,6 +182,25 @@ class SecurityController extends AppController {
 
     public function logout(): void
     {
-        $this->render("logout", ["title" => "Logout"]);
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $_SESSION = [];
+
+        if (ini_get('session.use_cookies')) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', [
+                'expires' => time() - 42000,
+                'path' => $params['path'],
+                'domain' => $params['domain'],
+                'secure' => $params['secure'],
+                'httponly' => $params['httponly'],
+                'samesite' => $params['samesite'] ?? 'Lax',
+            ]);
+        }
+
+        session_destroy();
+        $this->redirect('/login');
     }
 }

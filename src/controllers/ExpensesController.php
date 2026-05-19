@@ -11,6 +11,7 @@ class ExpensesController extends AppController {
     public function __construct()
     {
         parent::__construct();
+        $this->requireLogin();
         $this->expensesRepository = new ExpensesRepository();
         $this->categoriesRepository = new CategoriesRepository();
     }

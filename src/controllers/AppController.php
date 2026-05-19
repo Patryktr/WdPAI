@@ -64,6 +64,13 @@ class AppController {
         return (int) ($_SESSION['user_id'] ?? 1);
     }
 
+    protected function requireLogin(): void
+    {
+        if (empty($_SESSION['user_id'])) {
+            $this->redirect('/login');
+        }
+    }
+
     protected function setFlash(string $type, string $message): void
     {
         $_SESSION['flash'] = [
