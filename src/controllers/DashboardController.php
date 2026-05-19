@@ -1,19 +1,23 @@
 <?php
 
 require_once 'AppController.php';
-require_once __DIR__.'/../repositories/UsersRepository.php';
+require_once __DIR__.'/../repositories/ExpensesRepository.php';
 
 class DashboardController extends AppController {
 
     public function index() {
         $this->requireLogin();
 
-        // TODO pobieranie danych z bazy
-        // wstawianie zmiennych do widoku
+        $userId = $this->currentUserId();
         $title = "Dashboard";
-        $usersRepository = new UsersRepository();
-        $users = $usersRepository->getUsers();
+        $expensesRepository = new ExpensesRepository();
 
-        $this->render("index", ["title" => $title, "users" => $users]);
+        $this->render("index", [
+            "title" => $title,
+            "totalExpenses" => $expensesRepository->getTotalByUserId($userId),
+            "monthlyTotal" => $expensesRepository->getMonthlyTotalByUserId($userId),
+            "recentExpenses" => $expensesRepository->getRecentExpensesByUserId($userId, 5),
+            "categorySummary" => $expensesRepository->getCategorySummaryByUserId($userId),
+        ]);
     }
 }

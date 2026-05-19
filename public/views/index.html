@@ -1,7 +1,113 @@
-<h1>Dashboard</h1>
+<?php
+$totalExpenses = (float) ($totalExpenses ?? 0);
+$monthlyTotal = (float) ($monthlyTotal ?? 0);
+$recentExpenses = $recentExpenses ?? [];
+$categorySummary = $categorySummary ?? [];
+$maxCategoryTotal = max(array_map(static fn($category) => (float) $category['total'], $categorySummary ?: [['total' => 0]]));
+$maxCategoryTotal = $maxCategoryTotal > 0 ? $maxCategoryTotal : 1;
+?>
 
-<?php foreach($users as $value): ?>
-  <span><?= $value["username"]; ?></span>
-  <span><?= $value["full_name"]; ?></span>
-  <br />
-<?php endforeach; ?>
+<section class="dashboard-grid">
+  <article class="hero-card">
+    <div>
+      <p class="dashboard-kicker">Total expenses</p>
+      <strong><?= number_format($totalExpenses, 2); ?></strong>
+      <span>Current month overview with all-time spending context</span>
+    </div>
+    <a class="hero-action" href="/expenses/create">
+      <i class="fa-solid fa-plus"></i>
+      Dodaj wydatek
+    </a>
+  </article>
+
+  <article class="stat-card">
+    <p class="dashboard-kicker">Monthly expenditure</p>
+    <strong><?= number_format($monthlyTotal, 2); ?></strong>
+    <div class="mini-bars" aria-hidden="true">
+      <span style="height: 38%"></span>
+      <span style="height: 62%"></span>
+      <span style="height: 46%"></span>
+      <span style="height: 88%"></span>
+      <span style="height: 55%"></span>
+      <span style="height: 72%"></span>
+    </div>
+    <small>Budget remaining tracked locally</small>
+  </article>
+
+  <article class="chart-card">
+    <div class="card-heading">
+      <h2>Growth trends</h2>
+      <span>1M</span>
+    </div>
+    <svg class="trend-chart" viewBox="0 0 520 220" role="img" aria-label="Trend chart placeholder">
+      <defs>
+        <linearGradient id="trendFill" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#25ff16" stop-opacity="0.32" />
+          <stop offset="100%" stop-color="#25ff16" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+      <path class="trend-fill" d="M20 165 C95 150 115 85 190 105 C270 128 295 172 365 120 C420 80 462 66 500 90 L500 210 L20 210 Z" />
+      <path class="trend-line" d="M20 165 C95 150 115 85 190 105 C270 128 295 172 365 120 C420 80 462 66 500 90" />
+    </svg>
+  </article>
+
+  <aside class="category-stack">
+    <article class="category-card">
+      <div class="card-heading">
+        <h2>Categories</h2>
+        <a href="/categories">Manage</a>
+      </div>
+
+      <?php if (empty($categorySummary)): ?>
+        <p class="muted-copy">No category data yet.</p>
+      <?php else: ?>
+        <?php foreach ($categorySummary as $category): ?>
+          <?php
+            $categoryName = htmlspecialchars($category['name']);
+            $categoryTotal = (float) $category['total'];
+            $barWidth = max(8, (int) round(($categoryTotal / $maxCategoryTotal) * 100));
+          ?>
+          <div class="category-row">
+            <span><i class="fa-solid fa-layer-group"></i><?= $categoryName; ?></span>
+            <strong><?= number_format($categoryTotal, 2); ?></strong>
+            <div class="category-meter"><span style="width: <?= $barWidth; ?>%"></span></div>
+          </div>
+        <?php endforeach; ?>
+      <?php endif; ?>
+    </article>
+
+    <article class="quick-action-card">
+      <a href="/expenses/create" aria-label="Add new expense"><i class="fa-solid fa-plus"></i></a>
+      <strong>Add new expense</strong>
+      <span>Track a fresh transaction</span>
+    </article>
+  </aside>
+
+  <article class="activity-card">
+    <div class="card-heading">
+      <h2>Recent activity</h2>
+      <a href="/expenses">View all</a>
+    </div>
+
+    <?php if (empty($recentExpenses)): ?>
+      <p class="muted-copy">No expenses yet. Add the first one to see activity here.</p>
+    <?php else: ?>
+      <div class="activity-list">
+        <?php foreach ($recentExpenses as $expense): ?>
+          <div class="activity-item">
+            <span class="activity-icon"><i class="fa-solid fa-receipt"></i></span>
+            <div>
+              <strong><?= htmlspecialchars($expense['name']); ?></strong>
+              <small>
+                <?= htmlspecialchars($expense['category_name']); ?>
+                &middot;
+                <?= htmlspecialchars($expense['expense_date']); ?>
+              </small>
+            </div>
+            <b><?= number_format((float) $expense['amount'], 2); ?></b>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
+  </article>
+</section>

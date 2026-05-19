@@ -177,7 +177,9 @@ class SecurityController extends AppController {
 
     private function isUserActive(array $user): bool
     {
-        return filter_var($user['is_active'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $isActive = $user['is_active'] ?? false;
+
+        return $isActive === true || $isActive === 1 || $isActive === '1' || $isActive === 't' || $isActive === 'true';
     }
 
     public function logout(): void

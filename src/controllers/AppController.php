@@ -66,6 +66,10 @@ class AppController {
 
     protected function requireLogin(): void
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
         if (empty($_SESSION['user_id'])) {
             $this->redirect('/login');
         }

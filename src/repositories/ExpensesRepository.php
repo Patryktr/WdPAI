@@ -4,6 +4,80 @@ require_once 'Repository.php';
 
 class ExpensesRepository extends Repository {
 
+    public function getRecentExpensesByUserId(int $userId, int $limit): array
+    {
+        $query = $this->database->connect()->prepare(
+            "
+            SELECT e.id, e.name, e.amount, e.expense_date, c.name AS category_name
+            FROM expenses e
+            JOIN categories c ON c.id = e.category_id
+            WHERE e.user_id = :user_id
+            ORDER BY e.expense_date DESC, e.id DESC
+            LIMIT :limit
+            "
+        );
+
+        $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $query->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $query->execute();
+
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getMonthlyTotalByUserId(int $userId): float
+    {
+        $query = $this->database->connect()->prepare(
+            "
+            SELECT COALESCE(SUM(amount), 0) AS total
+            FROM expenses
+            WHERE user_id = :user_id
+              AND expense_date >= DATE_TRUNC('month', CURRENT_DATE)
+              AND expense_date < DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month'
+            "
+        );
+
+        $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $query->execute();
+
+        return (float) $query->fetchColumn();
+    }
+
+    public function getTotalByUserId(int $userId): float
+    {
+        $query = $this->database->connect()->prepare(
+            "
+            SELECT COALESCE(SUM(amount), 0) AS total
+            FROM expenses
+            WHERE user_id = :user_id
+            "
+        );
+
+        $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $query->execute();
+
+        return (float) $query->fetchColumn();
+    }
+
+    public function getCategorySummaryByUserId(int $userId): array
+    {
+        $query = $this->database->connect()->prepare(
+            "
+            SELECT c.name, COALESCE(SUM(e.amount), 0) AS total
+            FROM categories c
+            LEFT JOIN expenses e ON e.category_id = c.id AND e.user_id = c.user_id
+            WHERE c.user_id = :user_id
+            GROUP BY c.id, c.name
+            ORDER BY total DESC, c.name ASC
+            LIMIT 5
+            "
+        );
+
+        $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $query->execute();
+
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function getExpensesByUserId(int $userId, array $filters = []): array
     {
         $conditions = ["e.user_id = :user_id"];
