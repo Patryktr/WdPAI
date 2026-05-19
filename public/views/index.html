@@ -1,6 +1,9 @@
 <?php
 $totalExpenses = (float) ($totalExpenses ?? 0);
 $monthlyTotal = (float) ($monthlyTotal ?? 0);
+$monthlyCount = (int) ($monthlyCount ?? 0);
+$biggestExpense = $biggestExpense ?? null;
+$biggestCategory = $biggestCategory ?? null;
 $recentExpenses = $recentExpenses ?? [];
 $categorySummary = $categorySummary ?? [];
 $maxCategoryTotal = max(array_map(static fn($category) => (float) $category['total'], $categorySummary ?: [['total' => 0]]));
@@ -10,9 +13,9 @@ $maxCategoryTotal = $maxCategoryTotal > 0 ? $maxCategoryTotal : 1;
 <section class="dashboard-grid">
   <article class="hero-card">
     <div>
-      <p class="dashboard-kicker">Total expenses</p>
-      <strong><?= number_format($totalExpenses, 2); ?></strong>
-      <span>Current month overview with all-time spending context</span>
+      <p class="dashboard-kicker">Current month</p>
+      <strong><?= number_format($monthlyTotal, 2); ?></strong>
+      <span>Total expenses this month. All-time spending: <?= number_format($totalExpenses, 2); ?></span>
     </div>
     <a class="hero-action" href="/expenses/create">
       <i class="fa-solid fa-plus"></i>
@@ -21,8 +24,8 @@ $maxCategoryTotal = $maxCategoryTotal > 0 ? $maxCategoryTotal : 1;
   </article>
 
   <article class="stat-card">
-    <p class="dashboard-kicker">Monthly expenditure</p>
-    <strong><?= number_format($monthlyTotal, 2); ?></strong>
+    <p class="dashboard-kicker">Transactions</p>
+    <strong><?= $monthlyCount; ?></strong>
     <div class="mini-bars" aria-hidden="true">
       <span style="height: 38%"></span>
       <span style="height: 62%"></span>
@@ -31,8 +34,38 @@ $maxCategoryTotal = $maxCategoryTotal > 0 ? $maxCategoryTotal : 1;
       <span style="height: 55%"></span>
       <span style="height: 72%"></span>
     </div>
-    <small>Budget remaining tracked locally</small>
+    <small>Transactions recorded in the current month</small>
   </article>
+
+  <section class="dashboard-metrics">
+    <article class="metric-card">
+      <span><i class="fa-solid fa-arrow-trend-up"></i></span>
+      <div>
+        <p class="dashboard-kicker">Biggest expense</p>
+        <?php if ($biggestExpense === null): ?>
+          <strong>No expenses yet</strong>
+          <small>Add your first transaction</small>
+        <?php else: ?>
+          <strong><?= htmlspecialchars($biggestExpense['name']); ?></strong>
+          <small><?= htmlspecialchars($biggestExpense['category_name']); ?> · <?= number_format((float) $biggestExpense['amount'], 2); ?></small>
+        <?php endif; ?>
+      </div>
+    </article>
+
+    <article class="metric-card">
+      <span><i class="fa-solid fa-layer-group"></i></span>
+      <div>
+        <p class="dashboard-kicker">Top category</p>
+        <?php if ($biggestCategory === null): ?>
+          <strong>No category spending</strong>
+          <small>Category summary will appear here</small>
+        <?php else: ?>
+          <strong><?= htmlspecialchars($biggestCategory['name']); ?></strong>
+          <small><?= number_format((float) $biggestCategory['total'], 2); ?> total</small>
+        <?php endif; ?>
+      </div>
+    </article>
+  </section>
 
   <article class="chart-card">
     <div class="card-heading">

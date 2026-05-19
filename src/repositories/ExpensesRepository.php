@@ -42,6 +42,24 @@ class ExpensesRepository extends Repository {
         return (float) $query->fetchColumn();
     }
 
+    public function getMonthlyCountByUserId(int $userId): int
+    {
+        $query = $this->database->connect()->prepare(
+            "
+            SELECT COUNT(*) AS total
+            FROM expenses
+            WHERE user_id = :user_id
+              AND expense_date >= DATE_TRUNC('month', CURRENT_DATE)
+              AND expense_date < DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month'
+            "
+        );
+
+        $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $query->execute();
+
+        return (int) $query->fetchColumn();
+    }
+
     public function getTotalByUserId(int $userId): float
     {
         $query = $this->database->connect()->prepare(
@@ -56,6 +74,26 @@ class ExpensesRepository extends Repository {
         $query->execute();
 
         return (float) $query->fetchColumn();
+    }
+
+    public function getBiggestExpenseByUserId(int $userId): ?array
+    {
+        $query = $this->database->connect()->prepare(
+            "
+            SELECT e.id, e.name, e.amount, e.expense_date, c.name AS category_name
+            FROM expenses e
+            JOIN categories c ON c.id = e.category_id
+            WHERE e.user_id = :user_id
+            ORDER BY e.amount DESC, e.expense_date DESC, e.id DESC
+            LIMIT 1
+            "
+        );
+
+        $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $query->execute();
+
+        $expense = $query->fetch(PDO::FETCH_ASSOC);
+        return $expense ?: null;
     }
 
     public function getCategorySummaryByUserId(int $userId): array

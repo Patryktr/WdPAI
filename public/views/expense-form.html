@@ -40,10 +40,18 @@
                 $icon = 'fa-utensils';
             } elseif (str_contains($categoryName, 'transport')) {
                 $icon = 'fa-car';
+            } elseif (str_contains($categoryName, 'retail')) {
+                $icon = 'fa-bag-shopping';
+            } elseif (str_contains($categoryName, 'fun') || str_contains($categoryName, 'entertainment')) {
+                $icon = 'fa-masks-theater';
+            } elseif (str_contains($categoryName, 'health')) {
+                $icon = 'fa-briefcase-medical';
             } elseif (str_contains($categoryName, 'bill')) {
                 $icon = 'fa-bolt';
-            } elseif (str_contains($categoryName, 'entertainment')) {
-                $icon = 'fa-gamepad';
+            } elseif (str_contains($categoryName, 'travel')) {
+                $icon = 'fa-plane';
+            } elseif (str_contains($categoryName, 'other')) {
+                $icon = 'fa-table-cells-large';
             }
           ?>
           <label class="category-chip">

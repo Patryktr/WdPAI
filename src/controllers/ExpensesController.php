@@ -14,6 +14,7 @@ class ExpensesController extends AppController {
         $this->requireLogin();
         $this->expensesRepository = new ExpensesRepository();
         $this->categoriesRepository = new CategoriesRepository();
+        $this->categoriesRepository->ensureDefaultCategoriesForUser($this->currentUserId());
     }
 
     public function index(): void

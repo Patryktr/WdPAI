@@ -4,6 +4,34 @@ require_once 'Repository.php';
 
 class CategoriesRepository extends Repository {
 
+    private const DEFAULT_CATEGORIES = [
+        'Food',
+        'Transport',
+        'Retail',
+        'Fun',
+        'Health',
+        'Bills',
+        'Travel',
+        'Other',
+    ];
+
+    public function ensureDefaultCategoriesForUser(int $userId): void
+    {
+        $query = $this->database->connect()->prepare(
+            "
+            INSERT INTO categories (user_id, name)
+            VALUES (:user_id, :name)
+            ON CONFLICT (user_id, name) DO NOTHING
+            "
+        );
+
+        foreach (self::DEFAULT_CATEGORIES as $categoryName) {
+            $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+            $query->bindValue(':name', $categoryName);
+            $query->execute();
+        }
+    }
+
     public function getCategoriesByUserId(int $userId): array
     {
         $query = $this->database->connect()->prepare(

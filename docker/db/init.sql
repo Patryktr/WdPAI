@@ -38,6 +38,10 @@ INSERT INTO categories (user_id, name)
 VALUES
     (1, 'Food'),
     (1, 'Transport'),
+    (1, 'Retail'),
+    (1, 'Fun'),
+    (1, 'Health'),
     (1, 'Bills'),
-    (1, 'Entertainment')
+    (1, 'Travel'),
+    (1, 'Other')
 ON CONFLICT (user_id, name) DO NOTHING;

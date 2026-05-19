@@ -4,7 +4,7 @@
 
 Projekt jest prostą aplikacją PHP MVC uruchamianą w Dockerze. Obecnie zawiera routing oparty o mapę ścieżek, kontrolery, repozytoria, widoki HTML/PHP, wspólne layouty, konfiguracje nginx/php-fpm/PostgreSQL oraz podstawowe style CSS.
 
-Aktualny etap prac obejmuje działający CRUD wydatków, obsługę rejestracji i logowania użytkownika, sesję PHP, wylogowanie oraz ochronę stron wymagających zalogowania. Część sekcji aplikacji nadal pozostaje placeholderami do dalszej rozbudowy.
+Aktualny etap prac obejmuje działający CRUD wydatków, obsługę rejestracji i logowania użytkownika, sesję PHP, wylogowanie, ochronę stron wymagających zalogowania oraz panel finansowy dashboardu oparty o dane aktualnego użytkownika. Część sekcji aplikacji nadal pozostaje placeholderami do dalszej rozbudowy.
 
 ## Środowisko Docker
 
@@ -79,10 +79,11 @@ Aktualny etap prac obejmuje działający CRUD wydatków, obsługę rejestracji i
 - `Routing.php` mapuje ścieżki na kontrolery i akcje.
 - `src/controllers/AppController.php` zawiera wspólną logikę kontrolerów: `render()`, `redirect()`, `isGet()`, `isPost()`, `requireLogin()`, obsługę sesji i komunikaty flash.
 - `AppController::render()` ładuje widok z `public/views`, przechwytuje jego treść do `$content`, a następnie osadza ją w wybranym layoucie.
-- `public/views/layouts/app.php` jest wspólnym layoutem dla dashboardu i stron aplikacji oraz ładuje `/styles/main.css?v=app-expenses-2`.
+- `public/views/layouts/app.php` jest wspólnym layoutem dla dashboardu i stron aplikacji. Zawiera dark fintech shell z lewym sidebarem, topbarem, kontenerem contentu i mobilną dolną nawigacją.
 - `public/views/layouts/auth.php` jest layoutem dla logowania i rejestracji.
 - `src/controllers/SecurityController.php` obsługuje logowanie, rejestrację, zapis użytkownika, weryfikację hasła, zapis danych użytkownika do sesji i wylogowanie.
-- `src/controllers/ExpensesController.php` obsługuje listę, dodawanie, edycję i usuwanie wydatków.
+- `src/controllers/ExpensesController.php` obsługuje listę, dodawanie, edycję i usuwanie wydatków oraz zapewnia domyślne kategorie dla aktualnego użytkownika.
+- `src/controllers/DashboardController.php` renderuje panel finansowy z metrykami wydatków aktualnego użytkownika.
 - `Database.php` tworzy połączenie PDO z PostgreSQL.
 
 ## Aktualne ścieżki routingu
@@ -93,7 +94,7 @@ Aktualny etap prac obejmuje działający CRUD wydatków, obsługę rejestracji i
 | `/login` | `SecurityController` | `login` | `public/views/login.html` |
 | `/register` | `SecurityController` | `register` | `public/views/register.html` |
 | `/logout` | `SecurityController` | `logout` | wyczyszczenie sesji i redirect na `/login` |
-| `/dashboard` | `DashboardController` | `index` | `public/views/index.html` |
+| `/dashboard` | `DashboardController` | `index` | panel finansowy użytkownika |
 | `/expenses` | `ExpensesController` | `index` | lista wydatków |
 | `/expenses/create` | `ExpensesController` | `create` | `public/views/expense-form.html` |
 | `/expenses/edit?id=...` | `ExpensesController` | `edit` | formularz edycji wydatku |
@@ -140,6 +141,32 @@ Widok `/expenses` zawiera:
 - formularz dodawania/edycji w stylu dark fintech inspirowany widokiem `New Expense`
 
 CRUD wydatków używa `$_SESSION['user_id']` jako identyfikatora aktualnie zalogowanego użytkownika. Strony wydatków są chronione przez `requireLogin()`.
+
+Domyślne kategorie są automatycznie tworzone dla użytkownika przy wejściu w sekcję wydatków, jeśli jeszcze ich nie ma:
+
+- Food
+- Transport
+- Retail
+- Fun
+- Health
+- Bills
+- Travel
+- Other
+
+## Dashboard finansowy
+
+`/dashboard` pokazuje panel w stylu dark fintech oparty o dane aktualnego użytkownika:
+
+- suma wydatków w bieżącym miesiącu
+- łączna suma wydatków
+- liczba transakcji w bieżącym miesiącu
+- największy wydatek
+- największa kategoria
+- ostatnie 5 wydatków
+- podsumowanie kategorii
+- przycisk `Dodaj wydatek`
+
+Dane dashboardu są pobierane z `ExpensesRepository` wyłącznie dla `$_SESSION['user_id']`.
 
 ## Logowanie, rejestracja i sesja
 
@@ -206,11 +233,18 @@ W działającym lokalnym kontenerze PostgreSQL tabele `categories` i `expenses` 
 
 `CategoriesRepository`:
 
+- `ensureDefaultCategoriesForUser(int $userId): void`
 - `getCategoriesByUserId(int $userId): array`
 - `categoryBelongsToUser(int $categoryId, int $userId): bool`
 
 `ExpensesRepository`:
 
+- `getRecentExpensesByUserId(int $userId, int $limit): array`
+- `getMonthlyTotalByUserId(int $userId): float`
+- `getMonthlyCountByUserId(int $userId): int`
+- `getTotalByUserId(int $userId): float`
+- `getBiggestExpenseByUserId(int $userId): ?array`
+- `getCategorySummaryByUserId(int $userId): array`
 - `getExpensesByUserId(int $userId, array $filters = []): array`
 - `getExpenseById(int $id, int $userId): ?array`
 - `createExpense(...)`
@@ -222,20 +256,22 @@ Repozytoria używają zapytań przygotowanych PDO.
 ## Widoki i layouty
 
 - `public/views/layouts/auth.php` ładuje `/styles/main.css?v=auth-dark-5` i ustawia `body` z klasą `auth-page`.
+- `public/views/layouts/app.php` buduje layout po zalogowaniu: sidebar, topbar, kontener contentu i mobile bottom navigation.
 - `public/views/login.html` ma widok w stylu dark fintech: jednolite ciemne tło, ikonę portfela, brand `Luminous Wealth`, pola logowania i neonowy przycisk.
 - `public/views/register.html` jest utrzymany w tym samym stylu auth.
-- `public/views/index.html` jest treścią dashboardu osadzaną we wspólnym layoucie `app.php`.
+- `public/views/index.html` jest finansowym dashboardem osadzanym we wspólnym layoucie `app.php`.
+- `public/views/expense-form.html` ma dark fintech formularz dodawania/edycji wydatku z kafelkami kategorii.
 - Widoki `categories`, `statistics`, `profile` i `logout` są nadal placeholderami.
 
 ## Znane problemy / następne kroki
 
-1. Kategorie są tylko odczytywane
+1. Kategorie są tylko częściowo obsłużone
 
-   CRUD kategorii nie jest jeszcze zaimplementowany. Kategorie demo są tworzone w bazie.
+   Domyślne kategorie są tworzone automatycznie dla użytkownika, ale CRUD kategorii nie jest jeszcze zaimplementowany.
 
-2. Dashboard jest tymczasowy
+2. Dashboard wymaga dalszego rozwoju
 
-   `/dashboard` nadal pokazuje prostą listę użytkowników i nie jest jeszcze właściwym panelem finansowym.
+   `/dashboard` pokazuje już metryki wydatków użytkownika, ale wykres trendu jest nadal statycznym elementem UI.
 
 3. Brak testów automatycznych dla auth
 
