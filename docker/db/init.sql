@@ -18,6 +18,8 @@ CREATE TABLE categories (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name VARCHAR(80) NOT NULL,
+    icon VARCHAR(30),
+    color VARCHAR(20),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (user_id, name)
 );
@@ -34,14 +36,14 @@ CREATE TABLE expenses (
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO categories (user_id, name)
+INSERT INTO categories (user_id, name, icon, color)
 VALUES
-    (1, 'Food'),
-    (1, 'Transport'),
-    (1, 'Retail'),
-    (1, 'Fun'),
-    (1, 'Health'),
-    (1, 'Bills'),
-    (1, 'Travel'),
-    (1, 'Other')
+    (1, 'Food', 'fa-utensils', '#25ff16'),
+    (1, 'Transport', 'fa-car', '#69a7ff'),
+    (1, 'Retail', 'fa-bag-shopping', '#b18cff'),
+    (1, 'Fun', 'fa-masks-theater', '#ff8fd5'),
+    (1, 'Health', 'fa-briefcase-medical', '#67e8f9'),
+    (1, 'Bills', 'fa-bolt', '#facc15'),
+    (1, 'Travel', 'fa-plane', '#fb923c'),
+    (1, 'Other', 'fa-table-cells-large', '#94a3b8')
 ON CONFLICT (user_id, name) DO NOTHING;

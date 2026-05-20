@@ -1,2 +1,177 @@
-<h1>Categories</h1>
-<p>Categories list will be added later.</p>
+<?php
+$categories = $categories ?? [];
+$errors = $errors ?? [];
+$form = $form ?? ['name' => '', 'icon' => '', 'color' => '#25ff16'];
+$iconOptions = [
+    'fa-utensils',
+    'fa-car',
+    'fa-bag-shopping',
+    'fa-masks-theater',
+    'fa-briefcase-medical',
+    'fa-bolt',
+    'fa-plane',
+    'fa-table-cells-large',
+    'fa-mug-hot',
+    'fa-house',
+    'fa-cart-shopping',
+    'fa-dumbbell',
+];
+$colorOptions = [
+    '#25ff16',
+    '#69a7ff',
+    '#b18cff',
+    '#ff8fd5',
+    '#67e8f9',
+    '#facc15',
+    '#fb923c',
+    '#94a3b8',
+];
+
+$categoryMeta = static function (array $category): array {
+    $name = (string) $category['name'];
+    $normalized = strtolower($name);
+    $icon = trim((string) ($category['icon'] ?? ''));
+    $color = trim((string) ($category['color'] ?? ''));
+
+    if ($icon !== '' && $color !== '') {
+        return ['icon' => $icon, 'color' => $color];
+    }
+
+    if (str_contains($normalized, 'food')) {
+        return ['icon' => 'fa-utensils', 'color' => '#25ff16'];
+    }
+
+    if (str_contains($normalized, 'transport')) {
+        return ['icon' => 'fa-car', 'color' => '#69a7ff'];
+    }
+
+    if (str_contains($normalized, 'retail')) {
+        return ['icon' => 'fa-bag-shopping', 'color' => '#b18cff'];
+    }
+
+    if (str_contains($normalized, 'fun') || str_contains($normalized, 'entertainment')) {
+        return ['icon' => 'fa-masks-theater', 'color' => '#ff8fd5'];
+    }
+
+    if (str_contains($normalized, 'health')) {
+        return ['icon' => 'fa-briefcase-medical', 'color' => '#67e8f9'];
+    }
+
+    if (str_contains($normalized, 'bill')) {
+        return ['icon' => 'fa-bolt', 'color' => '#facc15'];
+    }
+
+    if (str_contains($normalized, 'travel')) {
+        return ['icon' => 'fa-plane', 'color' => '#fb923c'];
+    }
+
+    return ['icon' => 'fa-table-cells-large', 'color' => '#94a3b8'];
+};
+?>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Spending groups</p>
+    <h1>Categories</h1>
+  </div>
+  <a class="app-button app-button-primary" href="/expenses/create">Add expense</a>
+</section>
+
+<?php if (!empty($flash)): ?>
+  <div class="alert alert-<?= htmlspecialchars($flash['type']); ?>">
+    <?= htmlspecialchars($flash['message']); ?>
+  </div>
+<?php endif; ?>
+
+<?php if (!empty($errors)): ?>
+  <div class="alert alert-error">
+    <?php foreach ($errors as $error): ?>
+      <p><?= htmlspecialchars($error); ?></p>
+    <?php endforeach; ?>
+  </div>
+<?php endif; ?>
+
+<form class="category-create-form" method="POST" action="/categories">
+  <div class="field">
+    <label for="category-name">Name</label>
+    <input id="category-name" name="name" type="text" maxlength="50" placeholder="e.g. Coffee" value="<?= htmlspecialchars($form['name']); ?>" required />
+  </div>
+
+  <div class="field field-icon-picker">
+    <label>Icon</label>
+    <input id="category-icon" name="icon" type="hidden" maxlength="30" value="<?= htmlspecialchars($form['icon']); ?>" />
+    <div class="icon-picker" role="group" aria-label="Choose category icon">
+      <?php foreach ($iconOptions as $iconOption): ?>
+        <button
+          class="icon-choice <?= $form['icon'] === $iconOption ? 'active' : ''; ?>"
+          type="button"
+          data-icon="<?= htmlspecialchars($iconOption); ?>"
+          aria-label="<?= htmlspecialchars($iconOption); ?>"
+        >
+          <i class="fa-solid <?= htmlspecialchars($iconOption); ?>"></i>
+        </button>
+      <?php endforeach; ?>
+    </div>
+  </div>
+
+  <div class="field field-color-picker">
+    <label>Color</label>
+    <input id="category-color" name="color" type="hidden" maxlength="20" value="<?= htmlspecialchars($form['color']); ?>" />
+    <div class="color-picker" role="group" aria-label="Choose category color">
+      <?php foreach ($colorOptions as $colorOption): ?>
+        <button
+          class="color-choice <?= $form['color'] === $colorOption ? 'active' : ''; ?>"
+          type="button"
+          data-color="<?= htmlspecialchars($colorOption); ?>"
+          aria-label="<?= htmlspecialchars($colorOption); ?>"
+          style="--choice-color: <?= htmlspecialchars($colorOption); ?>;"
+        ></button>
+      <?php endforeach; ?>
+    </div>
+  </div>
+
+  <details class="category-advanced">
+    <summary>Advanced</summary>
+    <div class="category-advanced-fields">
+      <div class="field">
+        <label for="category-icon-custom">Icon class</label>
+        <input id="category-icon-custom" data-category-icon-custom type="text" maxlength="30" placeholder="fa-mug-hot" value="<?= htmlspecialchars($form['icon']); ?>" />
+      </div>
+
+      <div class="field">
+        <label for="category-color-custom">Color</label>
+        <input id="category-color-custom" data-category-color-custom type="text" maxlength="20" placeholder="#25ff16" value="<?= htmlspecialchars($form['color']); ?>" />
+      </div>
+    </div>
+  </details>
+
+  <button class="app-button app-button-primary" type="submit">Create category</button>
+</form>
+
+<?php if (empty($categories)): ?>
+  <div class="empty-state">
+    <h2>No categories yet</h2>
+    <p>Default categories will appear here when the expense section initializes them.</p>
+  </div>
+<?php else: ?>
+  <section class="categories-grid">
+    <?php foreach ($categories as $category): ?>
+      <?php
+        $name = (string) $category['name'];
+        $meta = $categoryMeta($category);
+        $expenseCount = (int) $category['expense_count'];
+        $total = (float) $category['total'];
+      ?>
+      <article class="category-tile" style="--category-color: <?= htmlspecialchars($meta['color']); ?>;">
+        <div class="category-tile-icon">
+          <i class="fa-solid <?= htmlspecialchars($meta['icon']); ?>"></i>
+        </div>
+        <div>
+          <h2><?= htmlspecialchars($name); ?></h2>
+          <p><?= $expenseCount; ?> <?= $expenseCount === 1 ? 'expense' : 'expenses'; ?></p>
+        </div>
+        <strong><?= number_format($total, 2); ?></strong>
+      </article>
+    <?php endforeach; ?>
+  </section>
+<?php endif; ?>
