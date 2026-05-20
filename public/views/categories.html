@@ -161,6 +161,7 @@ $categoryMeta = static function (array $category): array {
         $meta = $categoryMeta($category);
         $expenseCount = (int) $category['expense_count'];
         $total = (float) $category['total'];
+        $isDefault = (bool) $category['is_default'];
       ?>
       <article class="category-tile" style="--category-color: <?= htmlspecialchars($meta['color']); ?>;">
         <div class="category-tile-icon">
@@ -168,9 +169,31 @@ $categoryMeta = static function (array $category): array {
         </div>
         <div>
           <h2><?= htmlspecialchars($name); ?></h2>
-          <p><?= $expenseCount; ?> <?= $expenseCount === 1 ? 'expense' : 'expenses'; ?></p>
+          <p><?= htmlspecialchars((string) $expenseCount); ?> <?= htmlspecialchars($expenseCount === 1 ? 'expense' : 'expenses'); ?></p>
+          <?php if ($isDefault): ?>
+            <span class="category-badge">Base category</span>
+          <?php endif; ?>
         </div>
-        <strong><?= number_format($total, 2); ?></strong>
+        <div class="category-tile-footer">
+          <strong><?= htmlspecialchars(number_format($total, 2)); ?></strong>
+          <div class="category-actions">
+            <a class="category-action" href="/categories/edit?id=<?= htmlspecialchars((string) $category['id']); ?>" aria-label="Edit <?= htmlspecialchars($name); ?>">
+              <i class="fa-solid fa-pen"></i>
+            </a>
+            <?php if ($isDefault): ?>
+              <button class="category-action category-action-disabled" type="button" disabled aria-label="Base category cannot be deleted">
+                <i class="fa-solid fa-lock"></i>
+              </button>
+            <?php else: ?>
+            <form method="POST" action="/categories/delete" onsubmit="return confirm('Czy na pewno usunąć tę kategorię?');">
+              <input type="hidden" name="id" value="<?= htmlspecialchars((string) $category['id']); ?>" />
+              <button class="category-action category-action-danger" type="submit" aria-label="Delete <?= htmlspecialchars($name); ?>">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </form>
+            <?php endif; ?>
+          </div>
+        </div>
       </article>
     <?php endforeach; ?>
   </section>

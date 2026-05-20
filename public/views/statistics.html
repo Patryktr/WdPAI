@@ -1,2 +1,127 @@
-<h1>Statistics</h1>
-<p>Statistics view will be added later.</p>
+<?php
+$totalExpenses = (float) ($totalExpenses ?? 0);
+$averageExpense = (float) ($averageExpense ?? 0);
+$expensesCount = (int) ($expensesCount ?? 0);
+$biggestCategory = $biggestCategory ?? null;
+$monthlySummary = $monthlySummary ?? [];
+$categorySummary = $categorySummary ?? [];
+$monthlyChartJson = $monthlyChartJson ?? '[]';
+$categoryChartJson = $categoryChartJson ?? '[]';
+
+$maxMonthlyTotal = max(array_map(static fn($month) => (float) $month['total'], $monthlySummary ?: [['total' => 0]]));
+$maxMonthlyTotal = $maxMonthlyTotal > 0 ? $maxMonthlyTotal : 1;
+
+$maxCategoryTotal = max(array_map(static fn($category) => (float) $category['total'], $categorySummary ?: [['total' => 0]]));
+$maxCategoryTotal = $maxCategoryTotal > 0 ? $maxCategoryTotal : 1;
+?>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Financial overview</p>
+    <h1>Statistics</h1>
+  </div>
+  <a class="app-button app-button-primary" href="/expenses/create">Add expense</a>
+</section>
+
+<section class="statistics-grid">
+  <article class="statistics-hero">
+    <p class="dashboard-kicker">All-time spending</p>
+    <strong><?= htmlspecialchars(number_format($totalExpenses, 2)); ?></strong>
+    <span><?= htmlspecialchars((string) $expensesCount); ?> recorded <?= htmlspecialchars($expensesCount === 1 ? 'transaction' : 'transactions'); ?></span>
+  </article>
+
+  <article class="metric-card">
+    <span><i class="fa-solid fa-chart-simple"></i></span>
+    <div>
+      <p class="dashboard-kicker">Average expense</p>
+      <strong><?= htmlspecialchars(number_format($averageExpense, 2)); ?></strong>
+      <small>Average across all transactions</small>
+    </div>
+  </article>
+
+  <article class="metric-card">
+    <span><i class="fa-solid fa-receipt"></i></span>
+    <div>
+      <p class="dashboard-kicker">Transactions</p>
+      <strong><?= htmlspecialchars((string) $expensesCount); ?></strong>
+      <small>Total records in your account</small>
+    </div>
+  </article>
+
+  <article class="metric-card">
+    <span><i class="fa-solid fa-layer-group"></i></span>
+    <div>
+      <p class="dashboard-kicker">Biggest category</p>
+      <?php if ($biggestCategory === null): ?>
+        <strong>No spending yet</strong>
+        <small>Add expenses to build category stats</small>
+      <?php else: ?>
+        <strong><?= htmlspecialchars($biggestCategory['name']); ?></strong>
+        <small><?= htmlspecialchars(number_format((float) $biggestCategory['total'], 2)); ?> total</small>
+      <?php endif; ?>
+    </div>
+  </article>
+
+  <article class="statistics-panel statistics-panel-wide">
+    <div class="card-heading">
+      <h2>Monthly spending</h2>
+      <span><?= htmlspecialchars((string) count($monthlySummary)); ?> months</span>
+    </div>
+
+    <div class="statistics-chart" data-monthly-chart aria-label="Monthly spending chart"></div>
+
+    <?php if (empty($monthlySummary)): ?>
+      <p class="muted-copy">Monthly spending will appear after you add expenses.</p>
+    <?php else: ?>
+      <div class="statistics-bars">
+        <?php foreach ($monthlySummary as $month): ?>
+          <?php
+            $monthTotal = (float) $month['total'];
+            $barWidth = max(6, (int) round(($monthTotal / $maxMonthlyTotal) * 100));
+          ?>
+          <div class="statistics-bar-row">
+            <div>
+              <strong><?= htmlspecialchars($month['month_label']); ?></strong>
+              <small><?= htmlspecialchars((string) $month['expense_count']); ?> transactions</small>
+            </div>
+            <b><?= htmlspecialchars(number_format($monthTotal, 2)); ?></b>
+            <div class="statistics-meter"><span style="width: <?= htmlspecialchars((string) $barWidth); ?>%"></span></div>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
+  </article>
+
+  <article class="statistics-panel">
+    <div class="card-heading">
+      <h2>Category spending</h2>
+      <a href="/categories">Manage</a>
+    </div>
+
+    <div class="statistics-chart" data-category-chart aria-label="Category spending share chart"></div>
+
+    <?php if (empty($categorySummary)): ?>
+      <p class="muted-copy">Category spending will appear after you add expenses.</p>
+    <?php else: ?>
+      <div class="statistics-bars">
+        <?php foreach ($categorySummary as $category): ?>
+          <?php
+            $categoryTotal = (float) $category['total'];
+            $barWidth = max(6, (int) round(($categoryTotal / $maxCategoryTotal) * 100));
+          ?>
+          <div class="statistics-bar-row">
+            <div>
+              <strong><?= htmlspecialchars($category['name']); ?></strong>
+              <small><?= htmlspecialchars((string) $category['expense_count']); ?> transactions</small>
+            </div>
+            <b><?= htmlspecialchars(number_format($categoryTotal, 2)); ?></b>
+            <div class="statistics-meter statistics-meter-category"><span style="width: <?= htmlspecialchars((string) $barWidth); ?>%"></span></div>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
+  </article>
+</section>
+
+<script id="statistics-monthly-data" type="application/json"><?= $monthlyChartJson; ?></script>
+<script id="statistics-category-data" type="application/json"><?= $categoryChartJson; ?></script>

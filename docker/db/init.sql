@@ -20,6 +20,7 @@ CREATE TABLE categories (
     name VARCHAR(80) NOT NULL,
     icon VARCHAR(30),
     color VARCHAR(20),
+    is_default BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (user_id, name)
 );
@@ -36,14 +37,14 @@ CREATE TABLE expenses (
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO categories (user_id, name, icon, color)
+INSERT INTO categories (user_id, name, icon, color, is_default)
 VALUES
-    (1, 'Food', 'fa-utensils', '#25ff16'),
-    (1, 'Transport', 'fa-car', '#69a7ff'),
-    (1, 'Retail', 'fa-bag-shopping', '#b18cff'),
-    (1, 'Fun', 'fa-masks-theater', '#ff8fd5'),
-    (1, 'Health', 'fa-briefcase-medical', '#67e8f9'),
-    (1, 'Bills', 'fa-bolt', '#facc15'),
-    (1, 'Travel', 'fa-plane', '#fb923c'),
-    (1, 'Other', 'fa-table-cells-large', '#94a3b8')
+    (1, 'Food', 'fa-utensils', '#25ff16', TRUE),
+    (1, 'Transport', 'fa-car', '#69a7ff', TRUE),
+    (1, 'Retail', 'fa-bag-shopping', '#b18cff', TRUE),
+    (1, 'Fun', 'fa-masks-theater', '#ff8fd5', TRUE),
+    (1, 'Health', 'fa-briefcase-medical', '#67e8f9', TRUE),
+    (1, 'Bills', 'fa-bolt', '#facc15', TRUE),
+    (1, 'Travel', 'fa-plane', '#fb923c', TRUE),
+    (1, 'Other', 'fa-table-cells-large', '#94a3b8', TRUE)
 ON CONFLICT (user_id, name) DO NOTHING;

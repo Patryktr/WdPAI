@@ -4,14 +4,19 @@ require_once 'AppController.php';
 require_once __DIR__.'/../repositories/CategoriesRepository.php';
 
 class CategoriesController extends AppController {
+    private CategoriesRepository $categoriesRepository;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->requireLogin();
+        $this->categoriesRepository = new CategoriesRepository();
+        $this->categoriesRepository->ensureDefaultCategoriesForUser($this->currentUserId());
+    }
 
     public function index(): void
     {
-        $this->requireLogin();
         $userId = $this->currentUserId();
-        $categoriesRepository = new CategoriesRepository();
-
-        $categoriesRepository->ensureDefaultCategoriesForUser($userId);
         $errors = [];
         $form = [
             "name" => '',
@@ -30,7 +35,7 @@ class CategoriesController extends AppController {
 
             if (empty($errors)) {
                 try {
-                    $categoriesRepository->createCategory(
+                    $this->categoriesRepository->createCategory(
                         $userId,
                         $form['name'],
                         $form['icon'] !== '' ? $form['icon'] : null,
@@ -46,10 +51,98 @@ class CategoriesController extends AppController {
 
         $this->render("categories", [
             "title" => "Categories",
-            "categories" => $categoriesRepository->getCategoryStatsByUserId($userId),
+            "categories" => $this->categoriesRepository->getCategoryStatsByUserId($userId),
             "errors" => $errors,
             "form" => $form,
         ]);
+    }
+
+    public function edit(): void
+    {
+        $userId = $this->currentUserId();
+        $id = (int) ($_GET['id'] ?? 0);
+        $category = $this->categoriesRepository->getCategoryById($id, $userId);
+
+        if ($category === null) {
+            $this->setFlash('error', 'Nie znaleziono kategorii.');
+            $this->redirect('/categories');
+        }
+
+        $errors = [];
+        $form = [
+            'name' => (string) $category['name'],
+            'icon' => (string) ($category['icon'] ?? ''),
+            'color' => (string) ($category['color'] ?? '#25ff16'),
+        ];
+
+        if ($this->isPost()) {
+            $form = $this->categoryFromRequest();
+            $errors = $this->validateCategory($form);
+
+            if (empty($errors)) {
+                try {
+                    $this->categoriesRepository->updateCategory(
+                        $id,
+                        $userId,
+                        $form['name'],
+                        $form['icon'] !== '' ? $form['icon'] : null,
+                        $form['color'] !== '' ? $form['color'] : null
+                    );
+
+                    $this->setFlash('success', 'Kategoria została zaktualizowana.');
+                    $this->redirect('/categories');
+                } catch (PDOException $exception) {
+                    $errors[] = 'Nie udało się zaktualizować kategorii. Sprawdź, czy taka nazwa już nie istnieje.';
+                }
+            }
+        }
+
+        $this->render("category-form", [
+            "title" => "Edit category",
+            "mode" => "edit",
+            "category" => $category,
+            "form" => $form,
+            "errors" => $errors,
+        ]);
+    }
+
+    public function delete(): void
+    {
+        if (!$this->isPost()) {
+            $this->redirect('/categories');
+        }
+
+        $userId = $this->currentUserId();
+        $id = (int) ($_POST['id'] ?? 0);
+        $category = $this->categoriesRepository->getCategoryById($id, $userId);
+
+        if ($id <= 0 || $category === null) {
+            $this->setFlash('error', 'Nie znaleziono kategorii do usunięcia.');
+            $this->redirect('/categories');
+        }
+
+        if ((bool) $category['is_default']) {
+            $this->setFlash('error', 'Nie można usunąć kategorii bazowej.');
+            $this->redirect('/categories');
+        }
+
+        if ($this->categoriesRepository->categoryHasExpenses($id, $userId)) {
+            $this->setFlash('error', 'Nie można usunąć kategorii, która ma przypisane wydatki.');
+            $this->redirect('/categories');
+        }
+
+        $this->categoriesRepository->deleteCategory($id, $userId);
+        $this->setFlash('success', 'Kategoria została usunięta.');
+        $this->redirect('/categories');
+    }
+
+    private function categoryFromRequest(): array
+    {
+        return [
+            "name" => trim($_POST['name'] ?? ''),
+            "icon" => trim($_POST['icon'] ?? ''),
+            "color" => trim($_POST['color'] ?? ''),
+        ];
     }
 
     private function validateCategory(array $category): array

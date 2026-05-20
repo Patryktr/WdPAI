@@ -39,9 +39,9 @@ foreach ($sidebarLinks as $link) {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="/styles/main.css?v=app-shell-2" />
+    <link rel="stylesheet" href="/styles/main.css?v=statistics-charts-1" />
     <script src="https://kit.fontawesome.com/8fd9367667.js" crossorigin="anonymous"></script>
-    <script src="/scripts/main.js?v=category-picker-2" defer></script>
+    <script src="/scripts/main.js?v=statistics-charts-1" defer></script>
     <title><?= $title ?? "App"; ?></title>
   </head>
   <body class="app-page <?= $bodyClass ?? ''; ?>">

@@ -50,6 +50,14 @@ class Routing {
             "controller" => "CategoriesController",
             "action" => "index",
         ],
+        "categories/edit" => [
+            "controller" => "CategoriesController",
+            "action" => "edit",
+        ],
+        "categories/delete" => [
+            "controller" => "CategoriesController",
+            "action" => "delete",
+        ],
         "statistics" => [
             "controller" => "StatisticsController",
             "action" => "index",

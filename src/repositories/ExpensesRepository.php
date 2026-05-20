@@ -76,6 +76,60 @@ class ExpensesRepository extends Repository {
         return (float) $query->fetchColumn();
     }
 
+    public function getAverageExpenseByUserId(int $userId): float
+    {
+        $query = $this->database->connect()->prepare(
+            "
+            SELECT COALESCE(AVG(amount), 0) AS average_amount
+            FROM expenses
+            WHERE user_id = :user_id
+            "
+        );
+
+        $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $query->execute();
+
+        return (float) $query->fetchColumn();
+    }
+
+    public function getExpensesCountByUserId(int $userId): int
+    {
+        $query = $this->database->connect()->prepare(
+            "
+            SELECT COUNT(*) AS total
+            FROM expenses
+            WHERE user_id = :user_id
+            "
+        );
+
+        $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $query->execute();
+
+        return (int) $query->fetchColumn();
+    }
+
+    public function getMonthlySummaryByUserId(int $userId): array
+    {
+        $query = $this->database->connect()->prepare(
+            "
+            SELECT
+                TO_CHAR(DATE_TRUNC('month', expense_date), 'YYYY-MM') AS month_key,
+                TO_CHAR(DATE_TRUNC('month', expense_date), 'Mon YYYY') AS month_label,
+                COALESCE(SUM(amount), 0) AS total,
+                COUNT(*) AS expense_count
+            FROM expenses
+            WHERE user_id = :user_id
+            GROUP BY DATE_TRUNC('month', expense_date)
+            ORDER BY DATE_TRUNC('month', expense_date) ASC
+            "
+        );
+
+        $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $query->execute();
+
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function getBiggestExpenseByUserId(int $userId): ?array
     {
         $query = $this->database->connect()->prepare(
@@ -100,13 +154,12 @@ class ExpensesRepository extends Repository {
     {
         $query = $this->database->connect()->prepare(
             "
-            SELECT c.name, COALESCE(SUM(e.amount), 0) AS total
+            SELECT c.name, COALESCE(SUM(e.amount), 0) AS total, COUNT(e.id) AS expense_count
             FROM categories c
             LEFT JOIN expenses e ON e.category_id = c.id AND e.user_id = c.user_id
             WHERE c.user_id = :user_id
             GROUP BY c.id, c.name
             ORDER BY total DESC, c.name ASC
-            LIMIT 5
             "
         );
 

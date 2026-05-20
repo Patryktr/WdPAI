@@ -1,0 +1,111 @@
+<?php
+$errors = $errors ?? [];
+$form = $form ?? ['name' => '', 'icon' => '', 'color' => '#25ff16'];
+$category = $category ?? ['id' => 0, 'name' => ''];
+$iconOptions = [
+    'fa-utensils',
+    'fa-car',
+    'fa-bag-shopping',
+    'fa-masks-theater',
+    'fa-briefcase-medical',
+    'fa-bolt',
+    'fa-plane',
+    'fa-table-cells-large',
+    'fa-mug-hot',
+    'fa-house',
+    'fa-cart-shopping',
+    'fa-dumbbell',
+];
+$colorOptions = [
+    '#25ff16',
+    '#69a7ff',
+    '#b18cff',
+    '#ff8fd5',
+    '#67e8f9',
+    '#facc15',
+    '#fb923c',
+    '#94a3b8',
+];
+?>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Spending groups</p>
+    <h1>Edit category</h1>
+  </div>
+  <a class="app-button app-button-muted" href="/categories">Back to categories</a>
+</section>
+
+<?php if (!empty($flash)): ?>
+  <div class="alert alert-<?= htmlspecialchars($flash['type']); ?>">
+    <?= htmlspecialchars($flash['message']); ?>
+  </div>
+<?php endif; ?>
+
+<?php if (!empty($errors)): ?>
+  <div class="alert alert-error">
+    <?php foreach ($errors as $error): ?>
+      <p><?= htmlspecialchars($error); ?></p>
+    <?php endforeach; ?>
+  </div>
+<?php endif; ?>
+
+<form class="category-create-form category-edit-form" method="POST" action="/categories/edit?id=<?= htmlspecialchars((string) $category['id']); ?>">
+  <div class="field">
+    <label for="category-name">Name</label>
+    <input id="category-name" name="name" type="text" maxlength="50" value="<?= htmlspecialchars($form['name']); ?>" required />
+  </div>
+
+  <div class="field field-icon-picker">
+    <label>Icon</label>
+    <input id="category-icon" name="icon" type="hidden" maxlength="30" value="<?= htmlspecialchars($form['icon']); ?>" />
+    <div class="icon-picker" role="group" aria-label="Choose category icon">
+      <?php foreach ($iconOptions as $iconOption): ?>
+        <button
+          class="icon-choice <?= $form['icon'] === $iconOption ? 'active' : ''; ?>"
+          type="button"
+          data-icon="<?= htmlspecialchars($iconOption); ?>"
+          aria-label="<?= htmlspecialchars($iconOption); ?>"
+        >
+          <i class="fa-solid <?= htmlspecialchars($iconOption); ?>"></i>
+        </button>
+      <?php endforeach; ?>
+    </div>
+  </div>
+
+  <div class="field field-color-picker">
+    <label>Color</label>
+    <input id="category-color" name="color" type="hidden" maxlength="20" value="<?= htmlspecialchars($form['color']); ?>" />
+    <div class="color-picker" role="group" aria-label="Choose category color">
+      <?php foreach ($colorOptions as $colorOption): ?>
+        <button
+          class="color-choice <?= $form['color'] === $colorOption ? 'active' : ''; ?>"
+          type="button"
+          data-color="<?= htmlspecialchars($colorOption); ?>"
+          aria-label="<?= htmlspecialchars($colorOption); ?>"
+          style="--choice-color: <?= htmlspecialchars($colorOption); ?>;"
+        ></button>
+      <?php endforeach; ?>
+    </div>
+  </div>
+
+  <details class="category-advanced">
+    <summary>Advanced</summary>
+    <div class="category-advanced-fields">
+      <div class="field">
+        <label for="category-icon-custom">Icon class</label>
+        <input id="category-icon-custom" data-category-icon-custom type="text" maxlength="30" value="<?= htmlspecialchars($form['icon']); ?>" />
+      </div>
+
+      <div class="field">
+        <label for="category-color-custom">Color</label>
+        <input id="category-color-custom" data-category-color-custom type="text" maxlength="20" value="<?= htmlspecialchars($form['color']); ?>" />
+      </div>
+    </div>
+  </details>
+
+  <div class="category-form-actions">
+    <button class="app-button app-button-primary" type="submit">Save changes</button>
+    <a class="app-button app-button-muted" href="/categories">Cancel</a>
+  </div>
+</form>
