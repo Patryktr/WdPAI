@@ -1,2 +1,83 @@
-<h1>Profile</h1>
-<p>Profile view will be added later.</p>
+<?php
+$user = $user ?? [];
+$username = (string) ($user['username'] ?? '');
+$email = (string) ($user['email'] ?? '');
+$fullName = (string) ($user['full_name'] ?? '');
+$isActive = (bool) ($user['is_active'] ?? false);
+$createdAt = (string) ($user['created_at'] ?? '');
+$createdLabel = $createdAt !== '' ? date('Y-m-d H:i', strtotime($createdAt)) : '';
+?>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Personal account</p>
+    <h1>Profile</h1>
+  </div>
+  <a class="app-button app-button-muted" href="/logout">Logout</a>
+</section>
+
+<?php if (!empty($flash)): ?>
+  <div class="alert alert-<?= htmlspecialchars($flash['type']); ?>">
+    <?= htmlspecialchars($flash['message']); ?>
+  </div>
+<?php endif; ?>
+
+<section class="profile-grid">
+  <article class="profile-hero-card">
+    <div class="profile-avatar"><?= htmlspecialchars(strtoupper(substr($username !== '' ? $username : $email, 0, 1))); ?></div>
+    <div>
+      <p class="dashboard-kicker">Account holder</p>
+      <strong><?= htmlspecialchars($fullName !== '' ? $fullName : $username); ?></strong>
+      <span><?= htmlspecialchars($email); ?></span>
+    </div>
+  </article>
+
+  <article class="profile-card">
+    <div class="card-heading">
+      <h2>Account details</h2>
+      <span><?= htmlspecialchars($isActive ? 'Active' : 'Inactive'); ?></span>
+    </div>
+
+    <dl class="profile-details">
+      <div>
+        <dt>Username</dt>
+        <dd><?= htmlspecialchars($username); ?></dd>
+      </div>
+      <div>
+        <dt>Email</dt>
+        <dd><?= htmlspecialchars($email); ?></dd>
+      </div>
+      <div>
+        <dt>Full name</dt>
+        <dd><?= htmlspecialchars($fullName); ?></dd>
+      </div>
+      <div>
+        <dt>Account status</dt>
+        <dd>
+          <span class="profile-status <?= $isActive ? 'active' : 'inactive'; ?>">
+            <?= htmlspecialchars($isActive ? 'Active' : 'Inactive'); ?>
+          </span>
+        </dd>
+      </div>
+      <?php if ($createdLabel !== ''): ?>
+        <div>
+          <dt>Created at</dt>
+          <dd><?= htmlspecialchars($createdLabel); ?></dd>
+        </div>
+      <?php endif; ?>
+    </dl>
+  </article>
+
+  <article class="profile-card profile-security-card">
+    <div class="card-heading">
+      <h2>Bezpieczeństwo konta</h2>
+      <span>Protected</span>
+    </div>
+
+    <div class="profile-security-icon">
+      <i class="fa-solid fa-shield-halved"></i>
+    </div>
+    <p>Hasło jest przechowywane jako bezpieczny hash i nie jest wyświetlane w profilu ani przekazywane do widoku.</p>
+    <a class="app-button app-button-primary" href="/logout">Wyloguj</a>
+  </article>
+</section>
