@@ -1,10 +1,10 @@
 <?php
 $user = $user ?? [];
-$username = (string) ($user['username'] ?? '');
-$email = (string) ($user['email'] ?? '');
-$fullName = (string) ($user['full_name'] ?? '');
-$isActive = (bool) ($user['is_active'] ?? false);
-$createdAt = (string) ($user['created_at'] ?? '');
+$username = $user !== [] ? $user->getUsername() : '';
+$email = $user !== [] ? $user->getEmail() : '';
+$fullName = $user !== [] ? $user->getFullName() : '';
+$isActive = $user !== [] ? $user->isActive() : false;
+$createdAt = $user !== [] ? (string) ($user->getCreatedAt() ?? '') : '';
 $createdLabel = $createdAt !== '' ? date('Y-m-d H:i', strtotime($createdAt)) : '';
 $passwordErrors = $passwordErrors ?? [];
 ?>

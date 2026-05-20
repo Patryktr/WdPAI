@@ -56,7 +56,7 @@ class ProfileController extends AppController {
 
         $userWithPassword = $usersRepository->getUserWithPasswordById($userId);
 
-        if ($userWithPassword === null || !password_verify($currentPassword, $userWithPassword['password'])) {
+        if ($userWithPassword === null || !password_verify($currentPassword, $userWithPassword->getPassword() ?? '')) {
             return ['Aktualne hasło jest niepoprawne.'];
         }
 

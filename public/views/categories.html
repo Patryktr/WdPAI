@@ -28,10 +28,11 @@ $colorOptions = [
 ];
 
 $categoryMeta = static function (array $category): array {
-    $name = (string) $category['name'];
+    $categoryEntity = $category['category'];
+    $name = $categoryEntity->getName();
     $normalized = strtolower($name);
-    $icon = trim((string) ($category['icon'] ?? ''));
-    $color = trim((string) ($category['color'] ?? ''));
+    $icon = trim((string) ($categoryEntity->getIcon() ?? ''));
+    $color = trim((string) ($categoryEntity->getColor() ?? ''));
 
     if ($icon !== '' && $color !== '') {
         return ['icon' => $icon, 'color' => $color];
@@ -157,11 +158,12 @@ $categoryMeta = static function (array $category): array {
   <section class="categories-grid">
     <?php foreach ($categories as $category): ?>
       <?php
-        $name = (string) $category['name'];
+        $categoryEntity = $category['category'];
+        $name = $categoryEntity->getName();
         $meta = $categoryMeta($category);
         $expenseCount = (int) $category['expense_count'];
         $total = (float) $category['total'];
-        $isDefault = (bool) $category['is_default'];
+        $isDefault = $categoryEntity->isDefault();
       ?>
       <article class="category-tile" style="--category-color: <?= htmlspecialchars($meta['color']); ?>;">
         <div class="category-tile-icon">
@@ -177,7 +179,7 @@ $categoryMeta = static function (array $category): array {
         <div class="category-tile-footer">
           <strong><?= htmlspecialchars(number_format($total, 2)); ?></strong>
           <div class="category-actions">
-            <a class="category-action" href="/categories/edit?id=<?= htmlspecialchars((string) $category['id']); ?>" aria-label="Edit <?= htmlspecialchars($name); ?>">
+            <a class="category-action" href="/categories/edit?id=<?= htmlspecialchars((string) $categoryEntity->getId()); ?>" aria-label="Edit <?= htmlspecialchars($name); ?>">
               <i class="fa-solid fa-pen"></i>
             </a>
             <?php if ($isDefault): ?>
@@ -186,7 +188,7 @@ $categoryMeta = static function (array $category): array {
               </button>
             <?php else: ?>
             <form method="POST" action="/categories/delete" onsubmit="return confirm('Czy na pewno usunąć tę kategorię?');">
-              <input type="hidden" name="id" value="<?= htmlspecialchars((string) $category['id']); ?>" />
+                <input type="hidden" name="id" value="<?= htmlspecialchars((string) $categoryEntity->getId()); ?>" />
               <button class="category-action category-action-danger" type="submit" aria-label="Delete <?= htmlspecialchars($name); ?>">
                 <i class="fa-solid fa-trash"></i>
               </button>

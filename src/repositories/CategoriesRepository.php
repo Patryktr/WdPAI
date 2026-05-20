@@ -1,6 +1,7 @@
 <?php
 
 require_once 'Repository.php';
+require_once __DIR__.'/../entities/Category.php';
 
 class CategoriesRepository extends Repository {
 
@@ -57,13 +58,13 @@ class CategoriesRepository extends Repository {
         $query->execute();
     }
 
-    public function getCategoryById(int $id, int $userId): ?array
+    public function getCategoryById(int $id, int $userId): ?Category
     {
         $this->ensureCategoryMetadataColumns();
 
         $query = $this->database->connect()->prepare(
             "
-            SELECT id, user_id, name, icon, color, CASE WHEN is_default THEN 1 ELSE 0 END AS is_default
+            SELECT id, user_id, name, icon, color, CASE WHEN is_default THEN 1 ELSE 0 END AS is_default, created_at
             FROM categories
             WHERE id = :id AND user_id = :user_id
             "
@@ -73,8 +74,13 @@ class CategoriesRepository extends Repository {
         $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
         $query->execute();
 
-        $category = $query->fetch(PDO::FETCH_ASSOC);
-        return $category ?: null;
+        $row = $query->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            return null;
+        }
+
+        return $this->mapRowToCategory($row);
     }
 
     public function updateCategory(int $id, int $userId, string $name, ?string $icon, ?string $color): void
@@ -137,7 +143,7 @@ class CategoriesRepository extends Repository {
 
         $query = $this->database->connect()->prepare(
             "
-            SELECT id, name, icon, color, CASE WHEN is_default THEN 1 ELSE 0 END AS is_default
+            SELECT id, user_id, name, icon, color, CASE WHEN is_default THEN 1 ELSE 0 END AS is_default, created_at
             FROM categories
             WHERE user_id = :user_id
             ORDER BY name ASC
@@ -147,7 +153,10 @@ class CategoriesRepository extends Repository {
         $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
         $query->execute();
 
-        return $query->fetchAll(PDO::FETCH_ASSOC);
+        return array_map(
+            fn(array $row): Category => $this->mapRowToCategory($row),
+            $query->fetchAll(PDO::FETCH_ASSOC)
+        );
     }
 
     public function getCategoryStatsByUserId(int $userId): array
@@ -158,16 +167,18 @@ class CategoriesRepository extends Repository {
             "
             SELECT
                 c.id,
+                c.user_id,
                 c.name,
                 c.icon,
                 c.color,
                 CASE WHEN c.is_default THEN 1 ELSE 0 END AS is_default,
+                c.created_at,
                 COUNT(e.id) AS expense_count,
                 COALESCE(SUM(e.amount), 0) AS total
             FROM categories c
             LEFT JOIN expenses e ON e.category_id = c.id AND e.user_id = c.user_id
             WHERE c.user_id = :user_id
-            GROUP BY c.id, c.name, c.icon, c.color, c.is_default
+            GROUP BY c.id, c.user_id, c.name, c.icon, c.color, c.is_default, c.created_at
             ORDER BY total DESC, c.name ASC
             "
         );
@@ -175,7 +186,13 @@ class CategoriesRepository extends Repository {
         $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
         $query->execute();
 
-        return $query->fetchAll(PDO::FETCH_ASSOC);
+        return array_map(function (array $row): array {
+            return [
+                'category' => $this->mapRowToCategory($row),
+                'expense_count' => (int) $row['expense_count'],
+                'total' => (float) $row['total'],
+            ];
+        }, $query->fetchAll(PDO::FETCH_ASSOC));
     }
 
     public function categoryBelongsToUser(int $categoryId, int $userId): bool
@@ -211,5 +228,18 @@ class CategoriesRepository extends Repository {
             "ALTER TABLE categories ADD COLUMN IF NOT EXISTS is_default BOOLEAN NOT NULL DEFAULT FALSE"
         );
         $defaultQuery->execute();
+    }
+
+    private function mapRowToCategory(array $row): Category
+    {
+        return new Category(
+            (int) $row['id'],
+            (int) $row['user_id'],
+            (string) $row['name'],
+            isset($row['icon']) ? (string) $row['icon'] : null,
+            isset($row['color']) ? (string) $row['color'] : null,
+            (bool) ((int) $row['is_default']),
+            isset($row['created_at']) ? (string) $row['created_at'] : null
+        );
     }
 }

@@ -70,9 +70,9 @@ class CategoriesController extends AppController {
 
         $errors = [];
         $form = [
-            'name' => (string) $category['name'],
-            'icon' => (string) ($category['icon'] ?? ''),
-            'color' => (string) ($category['color'] ?? '#25ff16'),
+            'name' => $category->getName(),
+            'icon' => (string) ($category->getIcon() ?? ''),
+            'color' => (string) ($category->getColor() ?? '#25ff16'),
         ];
 
         if ($this->isPost()) {
@@ -121,7 +121,7 @@ class CategoriesController extends AppController {
             $this->redirect('/categories');
         }
 
-        if ((bool) $category['is_default']) {
+        if ($category->isDefault()) {
             $this->setFlash('error', 'Nie można usunąć kategorii bazowej.');
             $this->redirect('/categories');
         }

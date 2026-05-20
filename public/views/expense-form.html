@@ -34,7 +34,7 @@
       <div class="category-grid">
         <?php foreach ($categories as $category): ?>
           <?php
-            $categoryName = strtolower($category['name']);
+            $categoryName = strtolower($category->getName());
             $icon = 'fa-tag';
             if (str_contains($categoryName, 'food')) {
                 $icon = 'fa-utensils';
@@ -55,10 +55,10 @@
             }
           ?>
           <label class="category-chip">
-            <input type="radio" name="category_id" value="<?= $category['id']; ?>" <?= (string)($expense['category_id'] ?? '') === (string)$category['id'] ? 'checked' : ''; ?> required />
+            <input type="radio" name="category_id" value="<?= $category->getId(); ?>" <?= (string)($expense['category_id'] ?? '') === (string)$category->getId() ? 'checked' : ''; ?> required />
             <span>
               <i class="fa-solid <?= $icon; ?>"></i>
-              <?= htmlspecialchars($category['name']); ?>
+              <?= htmlspecialchars($category->getName()); ?>
             </span>
           </label>
         <?php endforeach; ?>

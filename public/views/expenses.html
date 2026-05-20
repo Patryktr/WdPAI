@@ -18,8 +18,8 @@
   <select name="category_id">
     <option value="">All categories</option>
     <?php foreach ($categories as $category): ?>
-      <option value="<?= $category['id']; ?>" <?= (string)($filters['category_id'] ?? '') === (string)$category['id'] ? 'selected' : ''; ?>>
-        <?= htmlspecialchars($category['name']); ?>
+      <option value="<?= $category->getId(); ?>" <?= (string)($filters['category_id'] ?? '') === (string)$category->getId() ? 'selected' : ''; ?>>
+        <?= htmlspecialchars($category->getName()); ?>
       </option>
     <?php endforeach; ?>
   </select>
@@ -51,15 +51,15 @@
     <tbody>
       <?php foreach ($expenses as $expense): ?>
         <tr>
-          <td><?= htmlspecialchars($expense['name']); ?></td>
-          <td><?= htmlspecialchars($expense['category_name']); ?></td>
-          <td><?= htmlspecialchars($expense['expense_date']); ?></td>
-          <td><?= htmlspecialchars($expense['note'] ?? ''); ?></td>
-          <td class="amount-cell"><?= number_format((float)$expense['amount'], 2); ?></td>
+          <td><?= htmlspecialchars($expense->getName()); ?></td>
+          <td><?= htmlspecialchars($expense->getCategoryName() ?? ''); ?></td>
+          <td><?= htmlspecialchars($expense->getExpenseDate()); ?></td>
+          <td><?= htmlspecialchars($expense->getNote() ?? ''); ?></td>
+          <td class="amount-cell"><?= number_format((float)$expense->getAmount(), 2); ?></td>
           <td class="actions-cell">
-            <a class="icon-action" href="/expenses/edit?id=<?= $expense['id']; ?>">Edit</a>
+            <a class="icon-action" href="/expenses/edit?id=<?= $expense->getId(); ?>">Edit</a>
             <form method="POST" action="/expenses/delete" onsubmit="return confirm('Delete this expense?');">
-              <input type="hidden" name="id" value="<?= $expense['id']; ?>" />
+              <input type="hidden" name="id" value="<?= $expense->getId(); ?>" />
               <button class="icon-action danger" type="submit">Delete</button>
             </form>
           </td>
@@ -72,17 +72,17 @@
     <?php foreach ($expenses as $expense): ?>
       <article class="expense-card">
         <div>
-          <h2><?= htmlspecialchars($expense['name']); ?></h2>
-          <p><?= htmlspecialchars($expense['category_name']); ?> · <?= htmlspecialchars($expense['expense_date']); ?></p>
+          <h2><?= htmlspecialchars($expense->getName()); ?></h2>
+          <p><?= htmlspecialchars($expense->getCategoryName() ?? ''); ?> · <?= htmlspecialchars($expense->getExpenseDate()); ?></p>
         </div>
-        <strong><?= number_format((float)$expense['amount'], 2); ?></strong>
-        <?php if (!empty($expense['note'])): ?>
-          <p><?= htmlspecialchars($expense['note']); ?></p>
+        <strong><?= number_format((float)$expense->getAmount(), 2); ?></strong>
+        <?php if (!empty($expense->getNote())): ?>
+          <p><?= htmlspecialchars($expense->getNote()); ?></p>
         <?php endif; ?>
         <div class="card-actions">
-          <a class="icon-action" href="/expenses/edit?id=<?= $expense['id']; ?>">Edit</a>
+          <a class="icon-action" href="/expenses/edit?id=<?= $expense->getId(); ?>">Edit</a>
           <form method="POST" action="/expenses/delete" onsubmit="return confirm('Delete this expense?');">
-            <input type="hidden" name="id" value="<?= $expense['id']; ?>" />
+            <input type="hidden" name="id" value="<?= $expense->getId(); ?>" />
             <button class="icon-action danger" type="submit">Delete</button>
           </form>
         </div>

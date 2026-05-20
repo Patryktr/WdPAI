@@ -84,20 +84,21 @@ class ExpensesController extends AppController {
 
         $errors = [];
         $categories = $this->categoriesRepository->getCategoriesByUserId($userId);
+        $expenseForm = $this->expenseToForm($expense);
 
         if ($this->isPost()) {
-            $expense = array_merge($expense, $this->expenseFromRequest());
-            $errors = $this->validateExpense($expense, $userId);
+            $expenseForm = array_merge($expenseForm, $this->expenseFromRequest());
+            $errors = $this->validateExpense($expenseForm, $userId);
 
             if (empty($errors)) {
                 $this->expensesRepository->updateExpense(
                     $id,
                     $userId,
-                    (int) $expense['category_id'],
-                    $expense['name'],
-                    $expense['amount'],
-                    $expense['expense_date'],
-                    $expense['note'] !== '' ? $expense['note'] : null
+                    (int) $expenseForm['category_id'],
+                    $expenseForm['name'],
+                    $expenseForm['amount'],
+                    $expenseForm['expense_date'],
+                    $expenseForm['note'] !== '' ? $expenseForm['note'] : null
                 );
 
                 $this->setFlash('success', 'Wydatek został zaktualizowany.');
@@ -109,7 +110,7 @@ class ExpensesController extends AppController {
             "title" => "Edit expense",
             "_body_class" => "expense-entry-body",
             "mode" => "edit",
-            "expense" => $expense,
+            "expense" => $expenseForm,
             "categories" => $categories,
             "errors" => $errors,
         ]);
@@ -153,6 +154,18 @@ class ExpensesController extends AppController {
             'category_id' => trim($_POST['category_id'] ?? ''),
             'expense_date' => trim($_POST['expense_date'] ?? ''),
             'note' => trim($_POST['note'] ?? ''),
+        ];
+    }
+
+    private function expenseToForm(Expense $expense): array
+    {
+        return [
+            'id' => $expense->getId(),
+            'name' => $expense->getName(),
+            'amount' => $expense->getAmount(),
+            'category_id' => $expense->getCategoryId(),
+            'expense_date' => $expense->getExpenseDate(),
+            'note' => (string) ($expense->getNote() ?? ''),
         ];
     }
 

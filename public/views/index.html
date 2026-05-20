@@ -46,8 +46,9 @@ $maxCategoryTotal = $maxCategoryTotal > 0 ? $maxCategoryTotal : 1;
           <strong>No expenses yet</strong>
           <small>Add your first transaction</small>
         <?php else: ?>
-          <strong><?= htmlspecialchars($biggestExpense['name']); ?></strong>
-          <small><?= htmlspecialchars($biggestExpense['category_name']); ?> · <?= number_format((float) $biggestExpense['amount'], 2); ?></small>
+          <?php $biggestExpenseEntity = $biggestExpense['expense']; ?>
+          <strong><?= htmlspecialchars($biggestExpenseEntity->getName()); ?></strong>
+          <small><?= htmlspecialchars($biggestExpense['category_name']); ?> · <?= number_format((float) $biggestExpenseEntity->getAmount(), 2); ?></small>
         <?php endif; ?>
       </div>
     </article>
@@ -127,17 +128,18 @@ $maxCategoryTotal = $maxCategoryTotal > 0 ? $maxCategoryTotal : 1;
     <?php else: ?>
       <div class="activity-list">
         <?php foreach ($recentExpenses as $expense): ?>
+          <?php $expenseEntity = $expense['expense']; ?>
           <div class="activity-item">
             <span class="activity-icon"><i class="fa-solid fa-receipt"></i></span>
             <div>
-              <strong><?= htmlspecialchars($expense['name']); ?></strong>
+              <strong><?= htmlspecialchars($expenseEntity->getName()); ?></strong>
               <small>
                 <?= htmlspecialchars($expense['category_name']); ?>
                 &middot;
-                <?= htmlspecialchars($expense['expense_date']); ?>
+                <?= htmlspecialchars($expenseEntity->getExpenseDate()); ?>
               </small>
             </div>
-            <b><?= number_format((float) $expense['amount'], 2); ?></b>
+            <b><?= number_format((float) $expenseEntity->getAmount(), 2); ?></b>
           </div>
         <?php endforeach; ?>
       </div>

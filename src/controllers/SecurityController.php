@@ -51,17 +51,17 @@ class SecurityController extends AppController {
 
         if (
             $user === null ||
-            !$this->isUserActive($user) ||
-            !password_verify($password, $user['password'])
+            !$user->isActive() ||
+            !password_verify($password, $user->getPassword() ?? '')
         ) {
             $this->renderLoginWithMessage($loginError);
             return;
         }
 
         session_regenerate_id(true);
-        $_SESSION['user_id'] = (int) $user['id'];
-        $_SESSION['user_email'] = $user['email'];
-        $_SESSION['username'] = $user['username'];
+        $_SESSION['user_id'] = $user->getId();
+        $_SESSION['user_email'] = $user->getEmail();
+        $_SESSION['username'] = $user->getUsername();
         $_SESSION['is_logged_in'] = true;
 
         $this->redirect('/dashboard');
@@ -173,13 +173,6 @@ class SecurityController extends AppController {
             "title" => "Login",
             "messages" => $message,
         ]);
-    }
-
-    private function isUserActive(array $user): bool
-    {
-        $isActive = $user['is_active'] ?? false;
-
-        return $isActive === true || $isActive === 1 || $isActive === '1' || $isActive === 't' || $isActive === 'true';
     }
 
     public function logout(): void

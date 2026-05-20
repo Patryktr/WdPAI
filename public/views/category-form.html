@@ -1,7 +1,8 @@
 <?php
 $errors = $errors ?? [];
 $form = $form ?? ['name' => '', 'icon' => '', 'color' => '#25ff16'];
-$category = $category ?? ['id' => 0, 'name' => ''];
+$category = $category ?? null;
+$categoryId = $category !== null ? $category->getId() : 0;
 $iconOptions = [
     'fa-utensils',
     'fa-car',
@@ -50,7 +51,7 @@ $colorOptions = [
   </div>
 <?php endif; ?>
 
-<form class="category-create-form category-edit-form" method="POST" action="/categories/edit?id=<?= htmlspecialchars((string) $category['id']); ?>">
+<form class="category-create-form category-edit-form" method="POST" action="/categories/edit?id=<?= htmlspecialchars((string) $categoryId); ?>">
   <div class="field">
     <label for="category-name">Name</label>
     <input id="category-name" name="name" type="text" maxlength="50" value="<?= htmlspecialchars($form['name']); ?>" required />

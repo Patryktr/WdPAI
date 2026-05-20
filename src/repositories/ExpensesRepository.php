@@ -1,6 +1,7 @@
 <?php
 
 require_once 'Repository.php';
+require_once __DIR__.'/../entities/Expense.php';
 
 class ExpensesRepository extends Repository {
 
@@ -8,7 +9,7 @@ class ExpensesRepository extends Repository {
     {
         $query = $this->database->connect()->prepare(
             "
-            SELECT e.id, e.name, e.amount, e.expense_date, c.name AS category_name
+            SELECT e.id, e.user_id, e.category_id, e.name, e.amount, e.expense_date, e.note, c.name AS category_name
             FROM expenses e
             JOIN categories c ON c.id = e.category_id
             WHERE e.user_id = :user_id
@@ -21,7 +22,12 @@ class ExpensesRepository extends Repository {
         $query->bindValue(':limit', $limit, PDO::PARAM_INT);
         $query->execute();
 
-        return $query->fetchAll(PDO::FETCH_ASSOC);
+        return array_map(function (array $row): array {
+            return [
+                'expense' => $this->mapRowToExpense($row),
+                'category_name' => (string) $row['category_name'],
+            ];
+        }, $query->fetchAll(PDO::FETCH_ASSOC));
     }
 
     public function getMonthlyTotalByUserId(int $userId): float
@@ -134,7 +140,7 @@ class ExpensesRepository extends Repository {
     {
         $query = $this->database->connect()->prepare(
             "
-            SELECT e.id, e.name, e.amount, e.expense_date, c.name AS category_name
+            SELECT e.id, e.user_id, e.category_id, e.name, e.amount, e.expense_date, e.note, c.name AS category_name
             FROM expenses e
             JOIN categories c ON c.id = e.category_id
             WHERE e.user_id = :user_id
@@ -146,8 +152,16 @@ class ExpensesRepository extends Repository {
         $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
         $query->execute();
 
-        $expense = $query->fetch(PDO::FETCH_ASSOC);
-        return $expense ?: null;
+        $row = $query->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            return null;
+        }
+
+        return [
+            'expense' => $this->mapRowToExpense($row),
+            'category_name' => (string) $row['category_name'],
+        ];
     }
 
     public function getCategorySummaryByUserId(int $userId): array
@@ -166,7 +180,13 @@ class ExpensesRepository extends Repository {
         $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
         $query->execute();
 
-        return $query->fetchAll(PDO::FETCH_ASSOC);
+        return array_map(static function (array $row): array {
+            return [
+                'name' => (string) $row['name'],
+                'total' => (float) $row['total'],
+                'expense_count' => (int) $row['expense_count'],
+            ];
+        }, $query->fetchAll(PDO::FETCH_ASSOC));
     }
 
     public function getExpensesByUserId(int $userId, array $filters = []): array
@@ -195,7 +215,7 @@ class ExpensesRepository extends Repository {
         }
 
         $sql = "
-            SELECT e.id, e.name, e.amount, e.expense_date, e.note, e.category_id, c.name AS category_name
+            SELECT e.id, e.user_id, e.category_id, e.name, e.amount, e.expense_date, e.note, c.name AS category_name
             FROM expenses e
             JOIN categories c ON c.id = e.category_id
             WHERE ".implode(' AND ', $conditions)."
@@ -214,10 +234,13 @@ class ExpensesRepository extends Repository {
 
         $query->execute();
 
-        return $query->fetchAll(PDO::FETCH_ASSOC);
+        return array_map(
+            fn(array $row): Expense => $this->mapRowToExpense($row),
+            $query->fetchAll(PDO::FETCH_ASSOC)
+        );
     }
 
-    public function getExpenseById(int $id, int $userId): ?array
+    public function getExpenseById(int $id, int $userId): ?Expense
     {
         $query = $this->database->connect()->prepare(
             "
@@ -231,8 +254,13 @@ class ExpensesRepository extends Repository {
         $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
         $query->execute();
 
-        $expense = $query->fetch(PDO::FETCH_ASSOC);
-        return $expense ?: null;
+        $row = $query->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            return null;
+        }
+
+        return $this->mapRowToExpense($row);
     }
 
     public function createExpense(
@@ -303,5 +331,21 @@ class ExpensesRepository extends Repository {
         $query->bindValue(':id', $id, PDO::PARAM_INT);
         $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
         $query->execute();
+    }
+
+    private function mapRowToExpense(array $row): Expense
+    {
+        return new Expense(
+            (int) $row['id'],
+            (int) $row['user_id'],
+            (int) $row['category_id'],
+            (string) $row['name'],
+            (string) $row['amount'],
+            (string) $row['expense_date'],
+            isset($row['note']) ? (string) $row['note'] : null,
+            isset($row['category_name']) ? (string) $row['category_name'] : null,
+            isset($row['created_at']) ? (string) $row['created_at'] : null,
+            isset($row['updated_at']) ? (string) $row['updated_at'] : null
+        );
     }
 }
