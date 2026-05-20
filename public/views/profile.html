@@ -6,6 +6,7 @@ $fullName = (string) ($user['full_name'] ?? '');
 $isActive = (bool) ($user['is_active'] ?? false);
 $createdAt = (string) ($user['created_at'] ?? '');
 $createdLabel = $createdAt !== '' ? date('Y-m-d H:i', strtotime($createdAt)) : '';
+$passwordErrors = $passwordErrors ?? [];
 ?>
 
 <section class="page-header">
@@ -79,5 +80,39 @@ $createdLabel = $createdAt !== '' ? date('Y-m-d H:i', strtotime($createdAt)) : '
     </div>
     <p>Hasło jest przechowywane jako bezpieczny hash i nie jest wyświetlane w profilu ani przekazywane do widoku.</p>
     <a class="app-button app-button-primary" href="/logout">Wyloguj</a>
+  </article>
+
+  <article class="profile-card profile-password-card">
+    <div class="card-heading">
+      <h2>Zmień hasło</h2>
+      <span>Bcrypt</span>
+    </div>
+
+    <?php if (!empty($passwordErrors)): ?>
+      <div class="alert alert-error">
+        <?php foreach ($passwordErrors as $error): ?>
+          <p><?= htmlspecialchars($error); ?></p>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
+
+    <form class="profile-password-form" method="POST" action="/profile">
+      <div class="field">
+        <label for="current-password">Aktualne hasło</label>
+        <input id="current-password" name="current_password" type="password" autocomplete="current-password" required />
+      </div>
+
+      <div class="field">
+        <label for="new-password">Nowe hasło</label>
+        <input id="new-password" name="new_password" type="password" minlength="8" autocomplete="new-password" required />
+      </div>
+
+      <div class="field">
+        <label for="new-password2">Powtórz nowe hasło</label>
+        <input id="new-password2" name="new_password2" type="password" minlength="8" autocomplete="new-password" required />
+      </div>
+
+      <button class="app-button app-button-primary" type="submit">Zmień hasło</button>
+    </form>
   </article>
 </section>

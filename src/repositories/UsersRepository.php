@@ -50,6 +50,23 @@ class UsersRepository extends Repository {
         return $user ?: null;
     }
 
+    public function getUserWithPasswordById(int $id): ?array
+    {
+        $query = $this->database->connect()->prepare(
+            "
+            SELECT id, username, email, full_name, is_active, created_at, password
+            FROM users
+            WHERE id = :id
+            "
+        );
+
+        $query->bindValue(':id', $id, PDO::PARAM_INT);
+        $query->execute();
+
+        $user = $query->fetch(PDO::FETCH_ASSOC);
+        return $user ?: null;
+    }
+
     public function createUser(
         string $username,
         string $email,
@@ -67,6 +84,21 @@ class UsersRepository extends Repository {
         $query->bindParam(':email', $email);
         $query->bindParam(':password', $passwordHash);
         $query->bindParam(':full_name', $fullName);
+        $query->execute();
+    }
+
+    public function updatePassword(int $id, string $passwordHash): void
+    {
+        $query = $this->database->connect()->prepare(
+            "
+            UPDATE users
+            SET password = :password
+            WHERE id = :id
+            "
+        );
+
+        $query->bindValue(':id', $id, PDO::PARAM_INT);
+        $query->bindValue(':password', $passwordHash);
         $query->execute();
     }
 }

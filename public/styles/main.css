@@ -971,6 +971,32 @@ footer {
   line-height: 1.6;
 }
 
+.profile-password-card {
+  grid-column: 1 / -1;
+}
+
+.profile-password-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  align-items: end;
+  gap: 0.9rem;
+}
+
+.profile-password-form input {
+  min-height: 44px;
+  padding: 0 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  color: #f2fff6;
+  background: rgba(8, 10, 9, 0.76);
+  box-sizing: border-box;
+}
+
+.profile-password-form button {
+  min-height: 44px;
+  white-space: nowrap;
+}
+
 .activity-card {
   grid-column: 1 / 2;
 }
@@ -2230,6 +2256,10 @@ footer {
   }
 
   .profile-details div {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-password-form {
     grid-template-columns: 1fr;
   }
 
