@@ -25,6 +25,11 @@ class CategoriesController extends AppController {
         ];
 
         if ($this->isPost()) {
+            if (!$this->validateCsrfToken($_POST['csrf_token'] ?? null)) {
+                $this->handleInvalidCsrfToken();
+                return;
+            }
+
             $form = [
                 "name" => trim($_POST['name'] ?? ''),
                 "icon" => trim($_POST['icon'] ?? ''),
@@ -76,6 +81,11 @@ class CategoriesController extends AppController {
         ];
 
         if ($this->isPost()) {
+            if (!$this->validateCsrfToken($_POST['csrf_token'] ?? null)) {
+                $this->handleInvalidCsrfToken();
+                return;
+            }
+
             $form = $this->categoryFromRequest();
             $errors = $this->validateCategory($form);
 
@@ -110,6 +120,11 @@ class CategoriesController extends AppController {
     {
         if (!$this->isPost()) {
             $this->redirect('/categories');
+        }
+
+        if (!$this->validateCsrfToken($_POST['csrf_token'] ?? null)) {
+            $this->handleInvalidCsrfToken();
+            return;
         }
 
         $userId = $this->currentUserId();

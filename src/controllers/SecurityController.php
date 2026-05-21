@@ -16,6 +16,11 @@ class SecurityController extends AppController {
             return;
         }
 
+        if (!$this->validateCsrfToken($_POST['csrf_token'] ?? null)) {
+            $this->handleInvalidCsrfToken('auth');
+            return;
+        }
+
         $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
         $errors = [];
@@ -75,6 +80,11 @@ class SecurityController extends AppController {
 
         if (!$this->isPost()) {
             $this->render("register", ["_layout" => "auth", "title" => "Register"]);
+            return;
+        }
+
+        if (!$this->validateCsrfToken($_POST['csrf_token'] ?? null)) {
+            $this->handleInvalidCsrfToken('auth');
             return;
         }
 

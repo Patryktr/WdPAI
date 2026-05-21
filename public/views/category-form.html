@@ -52,6 +52,8 @@ $colorOptions = [
 <?php endif; ?>
 
 <form class="category-create-form category-edit-form" method="POST" action="/categories/edit?id=<?= htmlspecialchars((string) $categoryId); ?>">
+  <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken); ?>" />
+
   <div class="field">
     <label for="category-name">Name</label>
     <input id="category-name" name="name" type="text" maxlength="50" value="<?= htmlspecialchars($form['name']); ?>" required />

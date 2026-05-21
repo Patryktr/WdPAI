@@ -16,6 +16,8 @@
   <?php endif; ?>
 
   <form class="expense-entry-form" method="POST" action="<?= $mode === 'edit' ? '/expenses/edit?id='.(int)$expense['id'] : '/expenses/create'; ?>">
+    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken); ?>" />
+
     <section class="amount-entry">
       <label for="amount">Enter amount</label>
       <div class="amount-input-wrap">

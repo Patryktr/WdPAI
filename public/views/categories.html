@@ -93,6 +93,8 @@ $categoryMeta = static function (array $category): array {
 <?php endif; ?>
 
 <form class="category-create-form" method="POST" action="/categories">
+  <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken); ?>" />
+
   <div class="field">
     <label for="category-name">Name</label>
     <input id="category-name" name="name" type="text" maxlength="50" placeholder="e.g. Coffee" value="<?= htmlspecialchars($form['name']); ?>" required />
@@ -188,6 +190,7 @@ $categoryMeta = static function (array $category): array {
               </button>
             <?php else: ?>
             <form method="POST" action="/categories/delete" onsubmit="return confirm('Czy na pewno usunąć tę kategorię?');">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken); ?>" />
                 <input type="hidden" name="id" value="<?= htmlspecialchars((string) $categoryEntity->getId()); ?>" />
               <button class="category-action category-action-danger" type="submit" aria-label="Delete <?= htmlspecialchars($name); ?>">
                 <i class="fa-solid fa-trash"></i>

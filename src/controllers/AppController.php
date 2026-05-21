@@ -11,6 +11,7 @@ class AppController {
     protected function render(string $view, array $params = []): void
     {
         $params['flash'] = $params['flash'] ?? $this->getFlash();
+        $params['csrfToken'] = $params['csrfToken'] ?? $this->generateCsrfToken();
         $viewPath = __DIR__.'/../../public/views/'.$view.'.html';
         $notFoundPath = __DIR__.'/../../public/views/404.html';
         $layout = $params["_layout"] ?? "app";
@@ -57,6 +58,34 @@ class AppController {
     protected function isGet(): bool
     {
         return $_SERVER["REQUEST_METHOD"] === 'GET';
+    }
+
+    public function generateCsrfToken(): string
+    {
+        if (empty($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+
+        return $_SESSION['csrf_token'];
+    }
+
+    public function validateCsrfToken($token): bool
+    {
+        if (!is_string($token) || empty($_SESSION['csrf_token'])) {
+            return false;
+        }
+
+        return hash_equals($_SESSION['csrf_token'], $token);
+    }
+
+    protected function handleInvalidCsrfToken(string $layout = 'app'): void
+    {
+        http_response_code(403);
+        $this->render("error", [
+            "_layout" => $layout,
+            "title" => "Forbidden",
+            "message" => "Nieprawidlowy token CSRF. Odswiez strone i sprobuj ponownie.",
+        ]);
     }
 
     protected function currentUserId(): int

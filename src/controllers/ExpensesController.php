@@ -43,6 +43,11 @@ class ExpensesController extends AppController {
         $errors = [];
 
         if ($this->isPost()) {
+            if (!$this->validateCsrfToken($_POST['csrf_token'] ?? null)) {
+                $this->handleInvalidCsrfToken();
+                return;
+            }
+
             $expense = $this->expenseFromRequest();
             $errors = $this->validateExpense($expense, $userId);
 
@@ -87,6 +92,11 @@ class ExpensesController extends AppController {
         $expenseForm = $this->expenseToForm($expense);
 
         if ($this->isPost()) {
+            if (!$this->validateCsrfToken($_POST['csrf_token'] ?? null)) {
+                $this->handleInvalidCsrfToken();
+                return;
+            }
+
             $expenseForm = array_merge($expenseForm, $this->expenseFromRequest());
             $errors = $this->validateExpense($expenseForm, $userId);
 
@@ -120,6 +130,11 @@ class ExpensesController extends AppController {
     {
         if (!$this->isPost()) {
             $this->redirect('/expenses');
+        }
+
+        if (!$this->validateCsrfToken($_POST['csrf_token'] ?? null)) {
+            $this->handleInvalidCsrfToken();
+            return;
         }
 
         $userId = $this->currentUserId();

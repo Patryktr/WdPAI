@@ -17,6 +17,8 @@
   <?php endif; ?>
 
   <form class="auth-form" method="POST" action="/register">
+    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken); ?>" />
+
     <div class="form-group">
       <label for="register-username">Nazwa u&#380;ytkownika</label>
       <input id="register-username" name="username" type="text" placeholder="np. patryk" autocomplete="username" />

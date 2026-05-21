@@ -97,6 +97,8 @@ $passwordErrors = $passwordErrors ?? [];
     <?php endif; ?>
 
     <form class="profile-password-form" method="POST" action="/profile">
+      <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken); ?>" />
+
       <div class="field">
         <label for="current-password">Aktualne hasło</label>
         <input id="current-password" name="current_password" type="password" autocomplete="current-password" required />

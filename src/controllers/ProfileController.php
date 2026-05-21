@@ -21,6 +21,11 @@ class ProfileController extends AppController {
         $passwordErrors = [];
 
         if ($this->isPost()) {
+            if (!$this->validateCsrfToken($_POST['csrf_token'] ?? null)) {
+                $this->handleInvalidCsrfToken();
+                return;
+            }
+
             $passwordErrors = $this->changePassword($usersRepository, $userId);
         }
 
