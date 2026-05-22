@@ -5,6 +5,7 @@ require_once __DIR__.'/../repositories/UsersRepository.php';
 
 class SecurityController extends AppController {
 
+    #[AllowedMethods('GET', 'POST')]
     public function login() {
         if ($this->isGet()) {
             $this->render("login", ["_layout" => "auth", "title" => "Login"]);
@@ -72,6 +73,7 @@ class SecurityController extends AppController {
         $this->redirect('/dashboard');
     }
 
+    #[AllowedMethods('GET', 'POST')]
     public function register() {
         if ($this->isGet()) {
             $this->render("register", ["_layout" => "auth", "title" => "Register"]);
@@ -185,6 +187,7 @@ class SecurityController extends AppController {
         ]);
     }
 
+    #[AllowedMethods('GET')]
     public function logout(): void
     {
         if (session_status() === PHP_SESSION_NONE) {

@@ -17,6 +17,7 @@ class ExpensesController extends AppController {
         $this->categoriesRepository->ensureDefaultCategoriesForUser($this->currentUserId());
     }
 
+    #[AllowedMethods('GET')]
     public function index(): void
     {
         $userId = $this->currentUserId();
@@ -35,6 +36,7 @@ class ExpensesController extends AppController {
         ]);
     }
 
+    #[AllowedMethods('GET', 'POST')]
     public function create(): void
     {
         $userId = $this->currentUserId();
@@ -76,6 +78,7 @@ class ExpensesController extends AppController {
         ]);
     }
 
+    #[AllowedMethods('GET', 'POST')]
     public function edit(): void
     {
         $userId = $this->currentUserId();
@@ -126,6 +129,7 @@ class ExpensesController extends AppController {
         ]);
     }
 
+    #[AllowedMethods('POST')]
     public function delete(): void
     {
         if (!$this->isPost()) {

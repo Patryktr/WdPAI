@@ -5,6 +5,7 @@ require_once __DIR__.'/../repositories/ExpensesRepository.php';
 
 class DashboardController extends AppController {
 
+    #[AllowedMethods('GET')]
     public function index() {
         $this->requireLogin();
 

@@ -5,6 +5,7 @@ require_once __DIR__.'/../repositories/ExpensesRepository.php';
 
 class StatisticsController extends AppController {
 
+    #[AllowedMethods('GET')]
     public function index(): void
     {
         $this->requireLogin();

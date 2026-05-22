@@ -14,6 +14,7 @@ class CategoriesController extends AppController {
         $this->categoriesRepository->ensureDefaultCategoriesForUser($this->currentUserId());
     }
 
+    #[AllowedMethods('GET', 'POST')]
     public function index(): void
     {
         $userId = $this->currentUserId();
@@ -62,6 +63,7 @@ class CategoriesController extends AppController {
         ]);
     }
 
+    #[AllowedMethods('GET', 'POST')]
     public function edit(): void
     {
         $userId = $this->currentUserId();
@@ -116,6 +118,7 @@ class CategoriesController extends AppController {
         ]);
     }
 
+    #[AllowedMethods('POST')]
     public function delete(): void
     {
         if (!$this->isPost()) {

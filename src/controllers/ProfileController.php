@@ -5,6 +5,7 @@ require_once __DIR__.'/../repositories/UsersRepository.php';
 
 class ProfileController extends AppController {
 
+    #[AllowedMethods('GET', 'POST')]
     public function index(): void
     {
         $this->requireLogin();

@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__.'/src/Attribute/AllowedMethods.php';
+require_once __DIR__.'/src/Helpers/HttpMethodGuard.php';
 require_once __DIR__.'/src/controllers/SecurityController.php';
 require_once __DIR__.'/src/controllers/DashboardController.php';
 require_once __DIR__.'/src/controllers/ExpensesController.php';
@@ -78,7 +80,27 @@ class Routing {
         $controller = self::$routes[$path]["controller"];
         $action = self::$routes[$path]["action"];
 
+        if (!checkRequestAllowed($controller, $action)) {
+            self::renderMethodNotAllowed($controller, $action);
+            return;
+        }
+
         $controllerObject = new $controller();
         $controllerObject->$action();
+    }
+
+    private static function renderMethodNotAllowed(string $controller, string $action): void
+    {
+        http_response_code(405);
+
+        $allowedMethods = getAllowedRequestMethods($controller, $action);
+        if (!empty($allowedMethods)) {
+            header('Allow: '.implode(', ', $allowedMethods));
+        }
+
+        $title = 'Method Not Allowed';
+        $message = 'Ta metoda HTTP nie jest dozwolona dla wybranej akcji.';
+
+        include __DIR__.'/public/views/error.html';
     }
 }
