@@ -42,9 +42,9 @@ foreach ($sidebarLinks as $link) {
     <link rel="stylesheet" href="/styles/main.css?v=statistics-charts-1" />
     <script src="https://kit.fontawesome.com/8fd9367667.js" crossorigin="anonymous"></script>
     <script src="/scripts/main.js?v=statistics-charts-1" defer></script>
-    <title><?= $title ?? "App"; ?></title>
+    <title><?= htmlspecialchars((string) ($title ?? "App"), ENT_QUOTES, 'UTF-8'); ?></title>
   </head>
-  <body class="app-page <?= $bodyClass ?? ''; ?>">
+  <body class="app-page <?= htmlspecialchars((string) ($bodyClass ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
     <div class="app-shell">
       <aside class="app-sidebar">
         <a class="sidebar-brand" href="/dashboard">
@@ -59,15 +59,15 @@ foreach ($sidebarLinks as $link) {
           <?php foreach ($sidebarLinks as $link): ?>
             <a class="sidebar-link <?= $isActive($link) ? 'active' : ''; ?>" href="<?= $link['href']; ?>">
               <i class="fa-solid <?= $link['icon']; ?>"></i>
-              <span><?= $link['label']; ?></span>
+            <span><?= htmlspecialchars((string) $link['label'], ENT_QUOTES, 'UTF-8'); ?></span>
             </a>
           <?php endforeach; ?>
         </nav>
 
         <div class="sidebar-user">
-          <span class="user-avatar"><?= htmlspecialchars(strtoupper(substr($username, 0, 1))); ?></span>
+          <span class="user-avatar"><?= htmlspecialchars((string) strtoupper(substr($username, 0, 1)), ENT_QUOTES, 'UTF-8'); ?></span>
           <span>
-            <strong><?= htmlspecialchars($username); ?></strong>
+            <strong><?= htmlspecialchars((string) $username, ENT_QUOTES, 'UTF-8'); ?></strong>
             <small>Personal account</small>
           </span>
         </div>
@@ -80,7 +80,7 @@ foreach ($sidebarLinks as $link) {
             <input name="search" type="search" placeholder="Search assets..." />
           </form>
 
-          <a class="topbar-link <?= $isActive(['match' => 'dashboard']) ? 'active' : ''; ?>" href="/dashboard"><?= htmlspecialchars(strtoupper($currentLabel)); ?></a>
+          <a class="topbar-link <?= $isActive(['match' => 'dashboard']) ? 'active' : ''; ?>" href="/dashboard"><?= htmlspecialchars((string) strtoupper($currentLabel), ENT_QUOTES, 'UTF-8'); ?></a>
 
           <div class="topbar-actions">
             <button type="button" aria-label="Notifications"><i class="fa-solid fa-bell"></i></button>
@@ -98,7 +98,7 @@ foreach ($sidebarLinks as $link) {
       <?php foreach ($mobileLinks as $link): ?>
         <a class="<?= $isActive($link) ? 'active' : ''; ?>" href="<?= $link['href']; ?>">
           <i class="fa-solid <?= $link['icon']; ?>"></i>
-          <span><?= $link['label']; ?></span>
+          <span><?= htmlspecialchars((string) $link['label'], ENT_QUOTES, 'UTF-8'); ?></span>
         </a>
       <?php endforeach; ?>
     </nav>

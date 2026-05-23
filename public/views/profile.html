@@ -18,52 +18,52 @@ $passwordErrors = $passwordErrors ?? [];
 </section>
 
 <?php if (!empty($flash)): ?>
-  <div class="alert alert-<?= htmlspecialchars($flash['type']); ?>">
-    <?= htmlspecialchars($flash['message']); ?>
+  <div class="alert alert-<?= htmlspecialchars((string) $flash['type'], ENT_QUOTES, 'UTF-8'); ?>">
+    <?= htmlspecialchars((string) $flash['message'], ENT_QUOTES, 'UTF-8'); ?>
   </div>
 <?php endif; ?>
 
 <section class="profile-grid">
   <article class="profile-hero-card">
-    <div class="profile-avatar"><?= htmlspecialchars(strtoupper(substr($username !== '' ? $username : $email, 0, 1))); ?></div>
+    <div class="profile-avatar"><?= htmlspecialchars((string) strtoupper(substr($username !== '' ? $username : $email, 0, 1)), ENT_QUOTES, 'UTF-8'); ?></div>
     <div>
       <p class="dashboard-kicker">Account holder</p>
-      <strong><?= htmlspecialchars($fullName !== '' ? $fullName : $username); ?></strong>
-      <span><?= htmlspecialchars($email); ?></span>
+      <strong><?= htmlspecialchars((string) ($fullName !== '' ? $fullName : $username), ENT_QUOTES, 'UTF-8'); ?></strong>
+      <span><?= htmlspecialchars((string) $email, ENT_QUOTES, 'UTF-8'); ?></span>
     </div>
   </article>
 
   <article class="profile-card">
     <div class="card-heading">
       <h2>Account details</h2>
-      <span><?= htmlspecialchars($isActive ? 'Active' : 'Inactive'); ?></span>
+      <span><?= htmlspecialchars((string) ($isActive ? 'Active' : 'Inactive'), ENT_QUOTES, 'UTF-8'); ?></span>
     </div>
 
     <dl class="profile-details">
       <div>
         <dt>Username</dt>
-        <dd><?= htmlspecialchars($username); ?></dd>
+        <dd><?= htmlspecialchars((string) $username, ENT_QUOTES, 'UTF-8'); ?></dd>
       </div>
       <div>
         <dt>Email</dt>
-        <dd><?= htmlspecialchars($email); ?></dd>
+        <dd><?= htmlspecialchars((string) $email, ENT_QUOTES, 'UTF-8'); ?></dd>
       </div>
       <div>
         <dt>Full name</dt>
-        <dd><?= htmlspecialchars($fullName); ?></dd>
+        <dd><?= htmlspecialchars((string) $fullName, ENT_QUOTES, 'UTF-8'); ?></dd>
       </div>
       <div>
         <dt>Account status</dt>
         <dd>
           <span class="profile-status <?= $isActive ? 'active' : 'inactive'; ?>">
-            <?= htmlspecialchars($isActive ? 'Active' : 'Inactive'); ?>
+            <?= htmlspecialchars((string) ($isActive ? 'Active' : 'Inactive'), ENT_QUOTES, 'UTF-8'); ?>
           </span>
         </dd>
       </div>
       <?php if ($createdLabel !== ''): ?>
         <div>
           <dt>Created at</dt>
-          <dd><?= htmlspecialchars($createdLabel); ?></dd>
+          <dd><?= htmlspecialchars((string) $createdLabel, ENT_QUOTES, 'UTF-8'); ?></dd>
         </div>
       <?php endif; ?>
     </dl>
@@ -91,13 +91,13 @@ $passwordErrors = $passwordErrors ?? [];
     <?php if (!empty($passwordErrors)): ?>
       <div class="alert alert-error">
         <?php foreach ($passwordErrors as $error): ?>
-          <p><?= htmlspecialchars($error); ?></p>
+          <p><?= htmlspecialchars((string) $error, ENT_QUOTES, 'UTF-8'); ?></p>
         <?php endforeach; ?>
       </div>
     <?php endif; ?>
 
     <form class="profile-password-form" method="POST" action="/profile">
-      <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken); ?>" />
+      <input type="hidden" name="csrf_token" value="<?= htmlspecialchars((string) $csrfToken, ENT_QUOTES, 'UTF-8'); ?>" />
 
       <div class="field">
         <label for="current-password">Aktualne hasło</label>
