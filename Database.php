@@ -36,10 +36,9 @@ class Database {
             );
 
             return $this->connection;
-        }
-        catch(PDOException $e) {
-            // change to error page e.g. 404 not found etc.
-            die("Connection failed: " . $e->getMessage());
+        } catch (PDOException $exception) {
+            error_log('Database connection failed: '.$exception->getMessage());
+            throw new RuntimeException('Application database connection failed.', 0, $exception);
         }
     }
 

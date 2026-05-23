@@ -1,6 +1,8 @@
 <?php
 
 class AppController {
+    private const DEFAULT_ERROR_MESSAGE = 'Wystąpił błąd aplikacji. Spróbuj ponownie później.';
+
     public function __construct()
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -44,6 +46,30 @@ class AppController {
         include $layoutPath;
     }
 
+    public static function renderErrorResponse(
+        int $statusCode = 500,
+        string $title = 'Error',
+        string $message = self::DEFAULT_ERROR_MESSAGE,
+        ?string $layout = null
+    ): void {
+        http_response_code($statusCode);
+
+        $viewPath = __DIR__.'/../../public/views/error.html';
+        $layoutPath = $layout !== null ? __DIR__.'/../../public/views/layouts/'.$layout.'.php' : null;
+        $bodyClass = '';
+
+        ob_start();
+        include $viewPath;
+        $content = ob_get_clean();
+
+        if ($layoutPath === null || !file_exists($layoutPath)) {
+            echo $content;
+            return;
+        }
+
+        include $layoutPath;
+    }
+
     protected function redirect(string $path): void
     {
         header("Location: ".$path);
@@ -80,12 +106,12 @@ class AppController {
 
     protected function handleInvalidCsrfToken(string $layout = 'app'): void
     {
-        http_response_code(403);
-        $this->render("error", [
-            "_layout" => $layout,
-            "title" => "Forbidden",
-            "message" => "Nieprawidlowy token CSRF. Odswiez strone i sprobuj ponownie.",
-        ]);
+        self::renderErrorResponse(
+            403,
+            'Forbidden',
+            'Nieprawidlowy token CSRF. Odswiez strone i sprobuj ponownie.',
+            $layout
+        );
     }
 
     protected function currentUserId(): int
