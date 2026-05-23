@@ -4,7 +4,7 @@
 
 Projekt jest prostą aplikacją PHP MVC uruchamianą w Dockerze. Obecnie zawiera routing oparty o mapę ścieżek, kontrolery, repozytoria, widoki HTML/PHP, wspólne layouty, konfiguracje nginx/php-fpm/PostgreSQL oraz podstawowe style CSS.
 
-Aktualny etap prac obejmuje działający CRUD wydatków, obsługę rejestracji i logowania użytkownika, sesję PHP, wylogowanie, ochronę stron wymagających zalogowania oraz panel finansowy dashboardu oparty o dane aktualnego użytkownika. Część sekcji aplikacji nadal pozostaje placeholderami do dalszej rozbudowy.
+Aktualny etap prac obejmuje działający CRUD wydatków, obsługę rejestracji i logowania użytkownika, sesję PHP, wylogowanie, ochronę stron wymagających zalogowania, kontrolę dozwolonych metod HTTP przez atrybuty PHP 8 oraz panel finansowy dashboardu oparty o dane aktualnego użytkownika. Część sekcji aplikacji nadal pozostaje placeholderami do dalszej rozbudowy.
 
 ## Środowisko Docker
 
@@ -58,6 +58,8 @@ Aktualny etap prac obejmuje działający CRUD wydatków, obsługę rejestracji i
 |           |-- head.html
 |           `-- nav.html
 `-- src
+    |-- Attribute
+    |   `-- AllowedMethods.php
     |-- controllers
     |   |-- AppController.php
     |   |-- CategoriesController.php
@@ -66,6 +68,8 @@ Aktualny etap prac obejmuje działający CRUD wydatków, obsługę rejestracji i
     |   |-- ProfileController.php
     |   |-- SecurityController.php
     |   `-- StatisticsController.php
+    |-- Helpers
+    |   `-- HttpMethodGuard.php
     `-- repositories
         |-- CategoriesRepository.php
         |-- ExpensesRepository.php
@@ -76,7 +80,9 @@ Aktualny etap prac obejmuje działający CRUD wydatków, obsługę rejestracji i
 ## Główne elementy aplikacji
 
 - `public/index.php` uruchamia sesję PHP z bezpiecznymi parametrami cookie, odbiera żądanie HTTP i przekazuje ścieżkę do `Routing::run()`.
-- `Routing.php` mapuje ścieżki na kontrolery i akcje.
+- `Routing.php` mapuje ścieżki na kontrolery i akcje oraz przed wywołaniem akcji sprawdza, czy aktualna metoda HTTP jest dozwolona.
+- `src/Attribute/AllowedMethods.php` definiuje atrybut PHP 8 do oznaczania metod kontrolerów dozwolonymi metodami HTTP.
+- `src/Helpers/HttpMethodGuard.php` używa `ReflectionMethod`, aby odczytać atrybut `AllowedMethods` i porównać go z `$_SERVER['REQUEST_METHOD']`.
 - `src/controllers/AppController.php` zawiera wspólną logikę kontrolerów: `render()`, `redirect()`, `isGet()`, `isPost()`, `requireLogin()`, obsługę sesji i komunikaty flash.
 - `AppController::render()` ładuje widok z `public/views`, przechwytuje jego treść do `$content`, a następnie osadza ją w wybranym layoucie.
 - `public/views/layouts/app.php` jest wspólnym layoutem dla dashboardu i stron aplikacji. Zawiera dark fintech shell z lewym sidebarem, topbarem, kontenerem contentu i mobilną dolną nawigacją.
@@ -88,21 +94,35 @@ Aktualny etap prac obejmuje działający CRUD wydatków, obsługę rejestracji i
 
 ## Aktualne ścieżki routingu
 
-| Ścieżka | Kontroler | Akcja | Widok / efekt |
-| --- | --- | --- | --- |
-| `/` | `SecurityController` | `login` | `public/views/login.html` |
-| `/login` | `SecurityController` | `login` | `public/views/login.html` |
-| `/register` | `SecurityController` | `register` | `public/views/register.html` |
-| `/logout` | `SecurityController` | `logout` | wyczyszczenie sesji i redirect na `/login` |
-| `/dashboard` | `DashboardController` | `index` | panel finansowy użytkownika |
-| `/expenses` | `ExpensesController` | `index` | lista wydatków |
-| `/expenses/create` | `ExpensesController` | `create` | `public/views/expense-form.html` |
-| `/expenses/edit?id=...` | `ExpensesController` | `edit` | formularz edycji wydatku |
-| `/expenses/delete` | `ExpensesController` | `delete` | usunięcie wydatku przez POST |
-| `/categories` | `CategoriesController` | `index` | `public/views/categories.html` |
-| `/statistics` | `StatisticsController` | `index` | `public/views/statistics.html` |
-| `/profile` | `ProfileController` | `index` | `public/views/profile.html` |
-| inna ścieżka | brak | brak | `public/views/404.html` |
+| Ścieżka | Kontroler | Akcja | Metody HTTP | Widok / efekt |
+| --- | --- | --- | --- | --- |
+| `/` | `SecurityController` | `login` | `GET`, `POST` | `public/views/login.html` |
+| `/login` | `SecurityController` | `login` | `GET`, `POST` | `public/views/login.html` |
+| `/register` | `SecurityController` | `register` | `GET`, `POST` | `public/views/register.html` |
+| `/logout` | `SecurityController` | `logout` | `GET` | wyczyszczenie sesji i redirect na `/login` |
+| `/dashboard` | `DashboardController` | `index` | `GET` | panel finansowy użytkownika |
+| `/expenses` | `ExpensesController` | `index` | `GET` | lista wydatków |
+| `/expenses/create` | `ExpensesController` | `create` | `GET`, `POST` | `public/views/expense-form.html` |
+| `/expenses/edit?id=...` | `ExpensesController` | `edit` | `GET`, `POST` | formularz edycji wydatku |
+| `/expenses/delete` | `ExpensesController` | `delete` | `POST` | usunięcie wydatku |
+| `/categories` | `CategoriesController` | `index` | `GET`, `POST` | `public/views/categories.html` |
+| `/categories/edit?id=...` | `CategoriesController` | `edit` | `GET`, `POST` | formularz edycji kategorii |
+| `/categories/delete` | `CategoriesController` | `delete` | `POST` | usunięcie kategorii |
+| `/statistics` | `StatisticsController` | `index` | `GET` | `public/views/statistics.html` |
+| `/profile` | `ProfileController` | `index` | `GET`, `POST` | `public/views/profile.html` |
+| inna ścieżka | brak | brak | brak | `public/views/404.html` |
+
+## Kontrola metod HTTP
+
+Akcje kontrolerów są oznaczone atrybutem `#[AllowedMethods(...)]`. Router przed utworzeniem kontrolera sprawdza dozwolone metody przez helper `checkRequestAllowed()`, który korzysta z `ReflectionMethod`.
+
+Jeśli żądanie używa niedozwolonej metody HTTP:
+
+- aplikacja ustawia `http_response_code(405)`
+- dodaje nagłówek `Allow` z listą dozwolonych metod
+- pokazuje `public/views/error.html`
+- nie wywołuje akcji kontrolera
+- nie używa `die()`
 
 ## CRUD wydatków
 
@@ -227,14 +247,22 @@ W działającym lokalnym kontenerze PostgreSQL tabele `categories` i `expenses` 
 `UsersRepository`:
 
 - `getUsers(): ?array`
-- `getUserByEmail(string $email): ?array`
-- `getUserById(int $id): ?array`
+- `getUserByEmail(string $email): ?User`
+- `getUserById(int $id): ?User`
+- `getUserWithPasswordById(int $id): ?User`
 - `createUser(string $username, string $email, string $passwordHash, string $fullName): void`
+- `updatePassword(int $id, string $passwordHash): void`
 
 `CategoriesRepository`:
 
 - `ensureDefaultCategoriesForUser(int $userId): void`
+- `createCategory(int $userId, string $name, ?string $icon, ?string $color): void`
+- `getCategoryById(int $id, int $userId): ?Category`
+- `updateCategory(int $id, int $userId, string $name, ?string $icon, ?string $color): void`
+- `deleteCategory(int $id, int $userId): void`
+- `categoryHasExpenses(int $id, int $userId): bool`
 - `getCategoriesByUserId(int $userId): array`
+- `getCategoryStatsByUserId(int $userId): array`
 - `categoryBelongsToUser(int $categoryId, int $userId): bool`
 
 `ExpensesRepository`:
@@ -246,7 +274,7 @@ W działającym lokalnym kontenerze PostgreSQL tabele `categories` i `expenses` 
 - `getBiggestExpenseByUserId(int $userId): ?array`
 - `getCategorySummaryByUserId(int $userId): array`
 - `getExpensesByUserId(int $userId, array $filters = []): array`
-- `getExpenseById(int $id, int $userId): ?array`
+- `getExpenseById(int $id, int $userId): ?Expense`
 - `createExpense(...)`
 - `updateExpense(...)`
 - `deleteExpense(int $id, int $userId): void`
@@ -261,13 +289,16 @@ Repozytoria używają zapytań przygotowanych PDO.
 - `public/views/register.html` jest utrzymany w tym samym stylu auth.
 - `public/views/index.html` jest finansowym dashboardem osadzanym we wspólnym layoucie `app.php`.
 - `public/views/expense-form.html` ma dark fintech formularz dodawania/edycji wydatku z kafelkami kategorii.
-- Widoki `categories`, `statistics`, `profile` i `logout` są nadal placeholderami.
+- `public/views/categories.html` obsługuje listę kategorii, formularz dodawania oraz akcje edycji i usuwania.
+- `public/views/category-form.html` obsługuje edycję kategorii.
+- `public/views/statistics.html` pokazuje podsumowania i dane wykresów przygotowane w `StatisticsController`.
+- `public/views/profile.html` pokazuje dane profilu i formularz zmiany hasła.
 
 ## Znane problemy / następne kroki
 
-1. Kategorie są tylko częściowo obsłużone
+1. Brak testów automatycznych dla metod HTTP
 
-   Domyślne kategorie są tworzone automatycznie dla użytkownika, ale CRUD kategorii nie jest jeszcze zaimplementowany.
+   Nowy mechanizm `AllowedMethods` został sprawdzony ręcznie, ale warto dodać testy regresji dla tras `GET`/`POST` i odpowiedzi `405`.
 
 2. Dashboard wymaga dalszego rozwoju
 
@@ -275,7 +306,7 @@ Repozytoria używają zapytań przygotowanych PDO.
 
 3. Brak testów automatycznych dla auth
 
-   Logowanie, rejestracja, sesja i ochrona tras wymagają jeszcze pokrycia testami lub ręcznej checklisty regresji.
+   Logowanie, rejestracja, sesja, CSRF i ochrona tras wymagają jeszcze pokrycia testami lub ręcznej checklisty regresji.
 
 ## Uwagi
 

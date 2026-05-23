@@ -4,6 +4,8 @@ require_once 'AppController.php';
 require_once __DIR__.'/../repositories/UsersRepository.php';
 
 class SecurityController extends AppController {
+    private const MAX_LOGIN_ATTEMPTS = 5;
+    private const LOGIN_LOCK_SECONDS = 60;
 
     #[AllowedMethods('GET', 'POST')]
     public function login() {
@@ -22,6 +24,14 @@ class SecurityController extends AppController {
             return;
         }
 
+        $loginError = 'Email lub hasło jest niepoprawne.';
+        $lockoutMessage = 'Zbyt wiele nieudanych prób. Spróbuj ponownie za chwilę.';
+
+        if ($this->isLoginLocked()) {
+            $this->renderLoginWithMessage($lockoutMessage);
+            return;
+        }
+
         $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
         $errors = [];
@@ -37,16 +47,12 @@ class SecurityController extends AppController {
         }
 
         if (!empty($errors)) {
-            $this->render("login", [
-                "_layout" => "auth",
-                "title" => "Login",
-                "messages" => implode('<br>', array_unique($errors)),
-            ]);
+            $this->registerFailedLoginAttempt($email);
+            $this->renderLoginWithMessage($this->isLoginLocked() ? $lockoutMessage : $loginError);
             return;
         }
 
         $usersRepository = new UsersRepository();
-        $loginError = 'Email lub hasło jest niepoprawne';
 
         try {
             $user = $usersRepository->getUserByEmail($email);
@@ -60,11 +66,13 @@ class SecurityController extends AppController {
             !$user->isActive() ||
             !password_verify($password, $user->getPassword() ?? '')
         ) {
-            $this->renderLoginWithMessage($loginError);
+            $this->registerFailedLoginAttempt($email);
+            $this->renderLoginWithMessage($this->isLoginLocked() ? $lockoutMessage : $loginError);
             return;
         }
 
         session_regenerate_id(true);
+        $this->clearLoginAttempts();
         $_SESSION['user_id'] = $user->getId();
         $_SESSION['user_email'] = $user->getEmail();
         $_SESSION['username'] = $user->getUsername();
@@ -162,6 +170,50 @@ class SecurityController extends AppController {
         }
 
         return strlen($value);
+    }
+
+    private function isLoginLocked(): bool
+    {
+        $lockedUntil = (int) ($_SESSION['login_locked_until'] ?? 0);
+
+        if ($lockedUntil > time()) {
+            return true;
+        }
+
+        if ($lockedUntil > 0) {
+            $this->clearLoginAttempts();
+        }
+
+        return false;
+    }
+
+    private function registerFailedLoginAttempt(string $email): void
+    {
+        $_SESSION['login_failed_attempts'] = (int) ($_SESSION['login_failed_attempts'] ?? 0) + 1;
+
+        $this->logFailedLoginAttempt($email);
+
+        if ($_SESSION['login_failed_attempts'] >= self::MAX_LOGIN_ATTEMPTS) {
+            $_SESSION['login_locked_until'] = time() + self::LOGIN_LOCK_SECONDS;
+        }
+    }
+
+    private function clearLoginAttempts(): void
+    {
+        unset($_SESSION['login_failed_attempts']);
+        unset($_SESSION['login_locked_until']);
+    }
+
+    private function logFailedLoginAttempt(string $email): void
+    {
+        $safeEmail = str_replace(["\r", "\n"], '', substr($email, 0, 255));
+        $safeIp = str_replace(["\r", "\n"], '', substr($_SERVER['REMOTE_ADDR'] ?? 'unknown', 0, 45));
+
+        error_log('Failed login attempt: '.json_encode([
+            'email' => $safeEmail,
+            'ip' => $safeIp,
+            'timestamp' => date('c'),
+        ]));
     }
 
     private function renderRegisterWithMessage(string $message, string $username, string $fullName, string $email): void
