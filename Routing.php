@@ -73,7 +73,12 @@ class Routing {
     public static function run(string $path): void
     {
         if (!array_key_exists($path, self::$routes)) {
-            include __DIR__.'/public/views/404.html';
+            AppController::renderErrorResponse(
+                404,
+                'Not Found',
+                'Nie znaleziono wybranej strony.',
+                'app'
+            );
             return;
         }
 
@@ -91,16 +96,16 @@ class Routing {
 
     private static function renderMethodNotAllowed(string $controller, string $action): void
     {
-        http_response_code(405);
-
         $allowedMethods = getAllowedRequestMethods($controller, $action);
         if (!empty($allowedMethods)) {
             header('Allow: '.implode(', ', $allowedMethods));
         }
 
-        $title = 'Method Not Allowed';
-        $message = 'Ta metoda HTTP nie jest dozwolona dla wybranej akcji.';
-
-        include __DIR__.'/public/views/error.html';
+        AppController::renderErrorResponse(
+            405,
+            'Method Not Allowed',
+            'Ta metoda HTTP nie jest dozwolona dla wybranej akcji.',
+            'app'
+        );
     }
 }
