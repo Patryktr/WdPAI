@@ -13,18 +13,18 @@ $maxCategoryTotal = $maxCategoryTotal > 0 ? $maxCategoryTotal : 1;
 <section class="dashboard-grid">
   <article class="hero-card">
     <div>
-      <p class="dashboard-kicker">Current month</p>
+      <p class="dashboard-kicker"><?= htmlspecialchars((string) __('dashboard.monthly_total'), ENT_QUOTES, 'UTF-8'); ?></p>
       <strong><?= htmlspecialchars((string) number_format($monthlyTotal, 2), ENT_QUOTES, 'UTF-8'); ?></strong>
-      <span>Total expenses this month. All-time spending: <?= htmlspecialchars((string) number_format($totalExpenses, 2), ENT_QUOTES, 'UTF-8'); ?></span>
+      <span><?= htmlspecialchars((string) __('dashboard.total_expenses'), ENT_QUOTES, 'UTF-8'); ?>: <?= htmlspecialchars((string) number_format($totalExpenses, 2), ENT_QUOTES, 'UTF-8'); ?></span>
     </div>
     <a class="hero-action" href="/expenses/create">
       <i class="fa-solid fa-plus"></i>
-      Dodaj wydatek
+      <?= htmlspecialchars((string) __('dashboard.add_expense'), ENT_QUOTES, 'UTF-8'); ?>
     </a>
   </article>
 
   <article class="stat-card">
-    <p class="dashboard-kicker">Transactions</p>
+    <p class="dashboard-kicker"><?= htmlspecialchars((string) __('dashboard.transactions_count'), ENT_QUOTES, 'UTF-8'); ?></p>
     <strong><?= htmlspecialchars((string) $monthlyCount, ENT_QUOTES, 'UTF-8'); ?></strong>
     <div class="mini-bars" aria-hidden="true">
       <span style="height: 38%"></span>
@@ -34,21 +34,21 @@ $maxCategoryTotal = $maxCategoryTotal > 0 ? $maxCategoryTotal : 1;
       <span style="height: 55%"></span>
       <span style="height: 72%"></span>
     </div>
-    <small>Transactions recorded in the current month</small>
+    <small><?= htmlspecialchars((string) __('dashboard.subtitle'), ENT_QUOTES, 'UTF-8'); ?></small>
   </article>
 
   <section class="dashboard-metrics">
     <article class="metric-card">
       <span><i class="fa-solid fa-arrow-trend-up"></i></span>
       <div>
-        <p class="dashboard-kicker">Biggest expense</p>
+        <p class="dashboard-kicker"><?= htmlspecialchars((string) __('dashboard.biggest_expense'), ENT_QUOTES, 'UTF-8'); ?></p>
         <?php if ($biggestExpense === null): ?>
-          <strong>No expenses yet</strong>
-          <small>Add your first transaction</small>
+          <strong><?= htmlspecialchars((string) __('dashboard.no_expenses'), ENT_QUOTES, 'UTF-8'); ?></strong>
+          <small><?= htmlspecialchars((string) __('dashboard.add_expense'), ENT_QUOTES, 'UTF-8'); ?></small>
         <?php else: ?>
           <?php $biggestExpenseEntity = $biggestExpense['expense']; ?>
           <strong><?= htmlspecialchars((string) $biggestExpenseEntity->getName(), ENT_QUOTES, 'UTF-8'); ?></strong>
-          <small><?= htmlspecialchars((string) $biggestExpense['category_name'], ENT_QUOTES, 'UTF-8'); ?> · <?= htmlspecialchars((string) number_format((float) $biggestExpenseEntity->getAmount(), 2), ENT_QUOTES, 'UTF-8'); ?></small>
+          <small><?= htmlspecialchars((string) localize_category_name((string) $biggestExpense['category_name']), ENT_QUOTES, 'UTF-8'); ?> · <?= htmlspecialchars((string) number_format((float) $biggestExpenseEntity->getAmount(), 2), ENT_QUOTES, 'UTF-8'); ?></small>
         <?php endif; ?>
       </div>
     </article>
@@ -56,10 +56,10 @@ $maxCategoryTotal = $maxCategoryTotal > 0 ? $maxCategoryTotal : 1;
     <article class="metric-card">
       <span><i class="fa-solid fa-layer-group"></i></span>
       <div>
-        <p class="dashboard-kicker">Top category</p>
+        <p class="dashboard-kicker"><?= htmlspecialchars((string) __('statistics.biggest_category'), ENT_QUOTES, 'UTF-8'); ?></p>
         <?php if ($biggestCategory === null): ?>
-          <strong>No category spending</strong>
-          <small>Category summary will appear here</small>
+          <strong><?= htmlspecialchars((string) __('statistics.no_data'), ENT_QUOTES, 'UTF-8'); ?></strong>
+          <small><?= htmlspecialchars((string) __('statistics.by_category'), ENT_QUOTES, 'UTF-8'); ?></small>
         <?php else: ?>
           <strong><?= htmlspecialchars((string) $biggestCategory['name'], ENT_QUOTES, 'UTF-8'); ?></strong>
           <small><?= htmlspecialchars((string) number_format((float) $biggestCategory['total'], 2), ENT_QUOTES, 'UTF-8'); ?> total</small>
@@ -70,7 +70,7 @@ $maxCategoryTotal = $maxCategoryTotal > 0 ? $maxCategoryTotal : 1;
 
   <article class="chart-card">
     <div class="card-heading">
-      <h2>Growth trends</h2>
+      <h2><?= htmlspecialchars((string) __('dashboard.monthly_trend'), ENT_QUOTES, 'UTF-8'); ?></h2>
       <span>1M</span>
     </div>
     <svg class="trend-chart" viewBox="0 0 520 220" role="img" aria-label="Trend chart placeholder">
@@ -88,23 +88,23 @@ $maxCategoryTotal = $maxCategoryTotal > 0 ? $maxCategoryTotal : 1;
   <aside class="category-stack">
     <article class="category-card">
       <div class="card-heading">
-        <h2>Categories</h2>
-        <a href="/categories">Manage</a>
+        <h2><?= htmlspecialchars((string) __('categories.title'), ENT_QUOTES, 'UTF-8'); ?></h2>
+        <a href="/categories"><?= htmlspecialchars((string) __('common.edit'), ENT_QUOTES, 'UTF-8'); ?></a>
       </div>
 
       <?php if (empty($categorySummary)): ?>
-        <p class="muted-copy">No category data yet.</p>
+        <p class="muted-copy"><?= htmlspecialchars((string) __('statistics.no_data'), ENT_QUOTES, 'UTF-8'); ?></p>
       <?php else: ?>
         <?php foreach ($categorySummary as $category): ?>
           <?php
-            $categoryName = (string) $category['name'];
+            $categoryName = localize_category_name((string) $category['name']);
             $categoryTotal = (float) $category['total'];
             $barWidth = max(8, (int) round(($categoryTotal / $maxCategoryTotal) * 100));
           ?>
           <div class="category-row">
             <span><i class="fa-solid fa-layer-group"></i><?= htmlspecialchars($categoryName, ENT_QUOTES, 'UTF-8'); ?></span>
             <strong><?= htmlspecialchars((string) number_format($categoryTotal, 2), ENT_QUOTES, 'UTF-8'); ?></strong>
-            <div class="category-meter"><span style="width: <?= htmlspecialchars((string) $barWidth, ENT_QUOTES, 'UTF-8'); ?>%"></span></div>
+            <div class="category-meter"><span data-meter-width="<?= htmlspecialchars((string) $barWidth, ENT_QUOTES, 'UTF-8'); ?>"></span></div>
           </div>
         <?php endforeach; ?>
       <?php endif; ?>
@@ -112,19 +112,19 @@ $maxCategoryTotal = $maxCategoryTotal > 0 ? $maxCategoryTotal : 1;
 
     <article class="quick-action-card">
       <a href="/expenses/create" aria-label="Add new expense"><i class="fa-solid fa-plus"></i></a>
-      <strong>Add new expense</strong>
-      <span>Track a fresh transaction</span>
+      <strong><?= htmlspecialchars((string) __('dashboard.add_expense'), ENT_QUOTES, 'UTF-8'); ?></strong>
+      <span><?= htmlspecialchars((string) __('expenses.subtitle'), ENT_QUOTES, 'UTF-8'); ?></span>
     </article>
   </aside>
 
   <article class="activity-card">
     <div class="card-heading">
-      <h2>Recent activity</h2>
-      <a href="/expenses">View all</a>
+      <h2><?= htmlspecialchars((string) __('dashboard.recent_expenses'), ENT_QUOTES, 'UTF-8'); ?></h2>
+      <a href="/expenses"><?= htmlspecialchars((string) __('common.actions'), ENT_QUOTES, 'UTF-8'); ?></a>
     </div>
 
     <?php if (empty($recentExpenses)): ?>
-      <p class="muted-copy">No expenses yet. Add the first one to see activity here.</p>
+      <p class="muted-copy"><?= htmlspecialchars((string) __('dashboard.no_expenses'), ENT_QUOTES, 'UTF-8'); ?></p>
     <?php else: ?>
       <div class="activity-list">
         <?php foreach ($recentExpenses as $expense): ?>
@@ -134,7 +134,7 @@ $maxCategoryTotal = $maxCategoryTotal > 0 ? $maxCategoryTotal : 1;
             <div>
               <strong><?= htmlspecialchars((string) $expenseEntity->getName(), ENT_QUOTES, 'UTF-8'); ?></strong>
               <small>
-                <?= htmlspecialchars((string) $expense['category_name'], ENT_QUOTES, 'UTF-8'); ?>
+                <?= htmlspecialchars((string) localize_category_name((string) $expense['category_name']), ENT_QUOTES, 'UTF-8'); ?>
                 &middot;
                 <?= htmlspecialchars((string) $expenseEntity->getExpenseDate(), ENT_QUOTES, 'UTF-8'); ?>
               </small>

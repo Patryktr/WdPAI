@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<?php require_once __DIR__.'/../../../src/helpers.php'; ?>
+<html lang="<?= htmlspecialchars((string) current_locale(), ENT_QUOTES, 'UTF-8'); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404</title>
+    <title><?= htmlspecialchars((string) __('error.404_title'), ENT_QUOTES, 'UTF-8'); ?></title>
 </head>
 <body>
     <h1>404</h1>
+    <p><?= htmlspecialchars((string) __('error.404_message'), ENT_QUOTES, 'UTF-8'); ?></p>
 </body>
 </html>

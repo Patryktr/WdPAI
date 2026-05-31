@@ -300,28 +300,82 @@ footer {
   text-shadow: 0 0 14px rgba(37, 255, 22, 0.32);
 }
 
-.topbar-actions {
+.locale-switcher {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
-  gap: 0.5rem;
+  gap: 0.35rem;
+  margin: 0;
 }
 
-.topbar-actions button {
+.locale-flag-btn {
   display: inline-flex;
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 32px;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.055);
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
-  color: #d8e7dd;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.05);
   cursor: pointer;
+  box-sizing: border-box;
 }
 
-.topbar-actions button:hover {
-  color: #25ff16;
-  box-shadow: 0 0 22px rgba(37, 255, 22, 0.12);
+.locale-flag-btn:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.locale-flag-btn.active {
+  border-color: rgba(37, 255, 22, 0.44);
+  box-shadow: 0 0 14px rgba(37, 255, 22, 0.18);
+}
+
+.locale-flag-btn:focus {
+  outline: none;
+  border-color: rgba(37, 255, 22, 0.44);
+  box-shadow: 0 0 0 3px rgba(37, 255, 22, 0.12);
+}
+
+.flag-icon {
+  position: relative;
+  display: inline-block;
+  width: 20px;
+  height: 14px;
+  overflow: hidden;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.flag-pl {
+  background: linear-gradient(180deg, #ffffff 50%, #d4213d 50%);
+}
+
+.flag-gb {
+  background: #012169;
+}
+
+.flag-gb::before,
+.flag-gb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.flag-gb::before {
+  background:
+    linear-gradient(34deg, transparent 43%, #ffffff 43%, #ffffff 57%, transparent 57%),
+    linear-gradient(-34deg, transparent 43%, #ffffff 43%, #ffffff 57%, transparent 57%),
+    linear-gradient(90deg, transparent 34%, #ffffff 34%, #ffffff 66%, transparent 66%),
+    linear-gradient(180deg, transparent 34%, #ffffff 34%, #ffffff 66%, transparent 66%);
+}
+
+.flag-gb::after {
+  background:
+    linear-gradient(34deg, transparent 47%, #c8102e 47%, #c8102e 53%, transparent 53%),
+    linear-gradient(-34deg, transparent 47%, #c8102e 47%, #c8102e 53%, transparent 53%),
+    linear-gradient(90deg, transparent 42%, #c8102e 42%, #c8102e 58%, transparent 58%),
+    linear-gradient(180deg, transparent 42%, #c8102e 42%, #c8102e 58%, transparent 58%);
 }
 
 .app-content {
@@ -1952,6 +2006,25 @@ footer {
   box-sizing: border-box;
 }
 
+.auth-locale-switcher {
+  position: fixed;
+  top: 0.9rem;
+  right: 0.9rem;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: rgba(9, 11, 10, 0.82);
+  backdrop-filter: blur(12px);
+}
+
+.auth-locale-label {
+  display: none;
+}
+
 .auth-card {
   width: min(100%, clamp(295px, 34vw, 360px));
   min-height: min(720px, calc(100dvh - 2rem));
@@ -2204,9 +2277,13 @@ footer {
     display: none;
   }
 
-  .topbar-actions button {
-    width: 36px;
-    height: 36px;
+  .locale-switcher {
+    justify-self: end;
+  }
+
+  .locale-flag-btn {
+    width: 34px;
+    height: 30px;
   }
 
   .app-content {
@@ -2394,6 +2471,17 @@ footer {
 
   .auth-page {
     padding: 1rem;
+  }
+
+  .auth-locale-switcher {
+    top: 0.65rem;
+    right: 0.65rem;
+    padding: 0.3rem 0.45rem;
+  }
+
+  .auth-locale-switcher .locale-flag-btn {
+    width: 32px;
+    height: 28px;
   }
 
   .auth-card {

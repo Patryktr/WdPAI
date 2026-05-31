@@ -1,7 +1,7 @@
 <?php
 
 class AppController {
-    private const DEFAULT_ERROR_MESSAGE = 'Wystąpił błąd aplikacji. Spróbuj ponownie później.';
+    private const DEFAULT_ERROR_MESSAGE = 'error.default_message';
 
     public function __construct()
     {
@@ -48,11 +48,16 @@ class AppController {
 
     public static function renderErrorResponse(
         int $statusCode = 500,
-        string $title = 'Error',
+        string $title = 'error.title',
         string $message = self::DEFAULT_ERROR_MESSAGE,
         ?string $layout = null
     ): void {
         http_response_code($statusCode);
+
+        if (function_exists('__')) {
+            $title = __($title);
+            $message = __($message);
+        }
 
         $viewPath = __DIR__.'/../../public/views/error.html';
         $layoutPath = $layout !== null ? __DIR__.'/../../public/views/layouts/'.$layout.'.php' : null;
@@ -108,8 +113,8 @@ class AppController {
     {
         self::renderErrorResponse(
             403,
-            'Forbidden',
-            'Nieprawidlowy token CSRF. Odswiez strone i sprobuj ponownie.',
+            'error.403_title',
+            'flash.invalid_csrf',
             $layout
         );
     }

@@ -31,7 +31,7 @@ class ProfileController extends AppController {
         }
 
         $this->render("profile", [
-            "title" => "Profile",
+            "title" => __('profile.title'),
             "user" => $user,
             "passwordErrors" => $passwordErrors,
         ]);
@@ -73,7 +73,7 @@ class ProfileController extends AppController {
         }
 
         $usersRepository->updatePassword($userId, $passwordHash);
-        $this->setFlash('success', 'Hasło zostało zmienione.');
+        $this->setFlash('success', __('flash.password_changed'));
         $this->redirect('/profile');
     }
 

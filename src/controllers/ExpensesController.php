@@ -29,7 +29,7 @@ class ExpensesController extends AppController {
         ];
 
         $this->render("expenses", [
-            "title" => "Expenses",
+            "title" => __('expenses.title'),
             "expenses" => $this->expensesRepository->getExpensesByUserId($userId, $filters),
             "categories" => $this->categoriesRepository->getCategoriesByUserId($userId),
             "filters" => $filters,
@@ -63,13 +63,13 @@ class ExpensesController extends AppController {
                     $expense['note'] !== '' ? $expense['note'] : null
                 );
 
-                $this->setFlash('success', 'Wydatek został dodany.');
+                $this->setFlash('success', __('flash.saved'));
                 $this->redirect('/expenses');
             }
         }
 
         $this->render("expense-form", [
-            "title" => "Create expense",
+            "title" => __('expenses.add'),
             "_body_class" => "expense-entry-body",
             "mode" => "create",
             "expense" => $expense,
@@ -86,7 +86,7 @@ class ExpensesController extends AppController {
         $expense = $this->expensesRepository->getExpenseById($id, $userId);
 
         if ($expense === null) {
-            $this->setFlash('error', 'Nie znaleziono wydatku.');
+            $this->setFlash('error', __('expenses.no_expenses'));
             $this->redirect('/expenses');
         }
 
@@ -114,13 +114,13 @@ class ExpensesController extends AppController {
                     $expenseForm['note'] !== '' ? $expenseForm['note'] : null
                 );
 
-                $this->setFlash('success', 'Wydatek został zaktualizowany.');
+                $this->setFlash('success', __('flash.updated'));
                 $this->redirect('/expenses');
             }
         }
 
         $this->render("expense-form", [
-            "title" => "Edit expense",
+            "title" => __('expenses.edit'),
             "_body_class" => "expense-entry-body",
             "mode" => "edit",
             "expense" => $expenseForm,
@@ -145,12 +145,12 @@ class ExpensesController extends AppController {
         $id = (int) ($_POST['id'] ?? 0);
 
         if ($id <= 0 || $this->expensesRepository->getExpenseById($id, $userId) === null) {
-            $this->setFlash('error', 'Nie znaleziono wydatku do usunięcia.');
+            $this->setFlash('error', __('expenses.no_expenses'));
             $this->redirect('/expenses');
         }
 
         $this->expensesRepository->deleteExpense($id, $userId);
-        $this->setFlash('success', 'Wydatek został usunięty.');
+        $this->setFlash('success', __('flash.deleted'));
         $this->redirect('/expenses');
     }
 

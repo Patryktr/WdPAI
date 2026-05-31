@@ -47,7 +47,7 @@ class CategoriesController extends AppController {
                         $form['icon'] !== '' ? $form['icon'] : null,
                         $form['color'] !== '' ? $form['color'] : null
                     );
-                    $this->setFlash('success', 'Kategoria została dodana.');
+                    $this->setFlash('success', __('flash.saved'));
                     $this->redirect('/categories');
                 } catch (PDOException $exception) {
                     $errors[] = 'Nie udało się dodać kategorii. Sprawdź, czy taka nazwa już nie istnieje.';
@@ -56,7 +56,7 @@ class CategoriesController extends AppController {
         }
 
         $this->render("categories", [
-            "title" => "Categories",
+            "title" => __('categories.title'),
             "categories" => $this->categoriesRepository->getCategoryStatsByUserId($userId),
             "errors" => $errors,
             "form" => $form,
@@ -71,7 +71,7 @@ class CategoriesController extends AppController {
         $category = $this->categoriesRepository->getCategoryById($id, $userId);
 
         if ($category === null) {
-            $this->setFlash('error', 'Nie znaleziono kategorii.');
+            $this->setFlash('error', __('categories.no_categories'));
             $this->redirect('/categories');
         }
 
@@ -101,7 +101,7 @@ class CategoriesController extends AppController {
                         $form['color'] !== '' ? $form['color'] : null
                     );
 
-                    $this->setFlash('success', 'Kategoria została zaktualizowana.');
+                    $this->setFlash('success', __('flash.updated'));
                     $this->redirect('/categories');
                 } catch (PDOException $exception) {
                     $errors[] = 'Nie udało się zaktualizować kategorii. Sprawdź, czy taka nazwa już nie istnieje.';
@@ -110,7 +110,7 @@ class CategoriesController extends AppController {
         }
 
         $this->render("category-form", [
-            "title" => "Edit category",
+            "title" => __('categories.edit'),
             "mode" => "edit",
             "category" => $category,
             "form" => $form,
@@ -135,7 +135,7 @@ class CategoriesController extends AppController {
         $category = $this->categoriesRepository->getCategoryById($id, $userId);
 
         if ($id <= 0 || $category === null) {
-            $this->setFlash('error', 'Nie znaleziono kategorii do usunięcia.');
+            $this->setFlash('error', __('categories.no_categories'));
             $this->redirect('/categories');
         }
 
@@ -150,7 +150,7 @@ class CategoriesController extends AppController {
         }
 
         $this->categoriesRepository->deleteCategory($id, $userId);
-        $this->setFlash('success', 'Kategoria została usunięta.');
+        $this->setFlash('success', __('flash.deleted'));
         $this->redirect('/categories');
     }
 

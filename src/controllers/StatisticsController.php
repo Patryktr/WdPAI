@@ -25,7 +25,7 @@ class StatisticsController extends AppController {
         }
 
         $this->render("statistics", [
-            "title" => "Statistics",
+            "title" => __('statistics.title'),
             "totalExpenses" => $expensesRepository->getTotalByUserId($userId),
             "averageExpense" => $expensesRepository->getAverageExpenseByUserId($userId),
             "expensesCount" => $expensesRepository->getExpensesCountByUserId($userId),

@@ -1,9 +1,9 @@
 <section class="page-header">
   <div>
-    <p class="eyebrow">Wallet overview</p>
-    <h1>Expenses</h1>
+    <p class="eyebrow"><?= htmlspecialchars((string) __('expenses.subtitle'), ENT_QUOTES, 'UTF-8'); ?></p>
+    <h1><?= htmlspecialchars((string) __('expenses.title'), ENT_QUOTES, 'UTF-8'); ?></h1>
   </div>
-  <a class="app-button app-button-primary" href="/expenses/create">Add expense</a>
+  <a class="app-button app-button-primary" href="/expenses/create"><?= htmlspecialchars((string) __('expenses.add'), ENT_QUOTES, 'UTF-8'); ?></a>
 </section>
 
 <?php if (!empty($flash)): ?>
@@ -13,13 +13,13 @@
 <?php endif; ?>
 
 <form class="filters-bar" method="GET" action="/expenses">
-  <input name="search" type="search" placeholder="Search expenses" value="<?= htmlspecialchars((string) ($filters['search'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" />
+  <input name="search" type="search" placeholder="<?= htmlspecialchars((string) __('expenses.search_placeholder'), ENT_QUOTES, 'UTF-8'); ?>" value="<?= htmlspecialchars((string) ($filters['search'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" />
 
   <select name="category_id">
-    <option value="">All categories</option>
+    <option value=""><?= htmlspecialchars((string) __('categories.title'), ENT_QUOTES, 'UTF-8'); ?></option>
     <?php foreach ($categories as $category): ?>
       <option value="<?= htmlspecialchars((string) $category->getId(), ENT_QUOTES, 'UTF-8'); ?>" <?= (string)($filters['category_id'] ?? '') === (string)$category->getId() ? 'selected' : ''; ?>>
-        <?= htmlspecialchars((string) $category->getName(), ENT_QUOTES, 'UTF-8'); ?>
+        <?= htmlspecialchars((string) localize_category_name((string) $category->getName()), ENT_QUOTES, 'UTF-8'); ?>
       </option>
     <?php endforeach; ?>
   </select>
@@ -27,41 +27,41 @@
   <input name="date_from" type="date" value="<?= htmlspecialchars((string) ($filters['date_from'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" />
   <input name="date_to" type="date" value="<?= htmlspecialchars((string) ($filters['date_to'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" />
 
-  <button class="app-button" type="submit">Filter</button>
-  <a class="app-button app-button-muted" href="/expenses">Reset</a>
+  <button class="app-button" type="submit"><?= htmlspecialchars((string) __('common.filter'), ENT_QUOTES, 'UTF-8'); ?></button>
+  <a class="app-button app-button-muted" href="/expenses"><?= htmlspecialchars((string) __('common.clear'), ENT_QUOTES, 'UTF-8'); ?></a>
 </form>
 
 <?php if (empty($expenses)): ?>
   <div class="empty-state">
-    <h2>No expenses found</h2>
-    <p>Add your first expense or change filters.</p>
+    <h2><?= htmlspecialchars((string) __('expenses.no_expenses'), ENT_QUOTES, 'UTF-8'); ?></h2>
+    <p><?= htmlspecialchars((string) __('expenses.subtitle'), ENT_QUOTES, 'UTF-8'); ?></p>
   </div>
 <?php else: ?>
   <table class="expenses-table">
     <thead>
       <tr>
-        <th>Name</th>
-        <th>Category</th>
-        <th>Date</th>
-        <th>Note</th>
-        <th class="amount-cell">Amount</th>
-        <th>Actions</th>
+        <th><?= htmlspecialchars((string) __('common.name'), ENT_QUOTES, 'UTF-8'); ?></th>
+        <th><?= htmlspecialchars((string) __('common.category'), ENT_QUOTES, 'UTF-8'); ?></th>
+        <th><?= htmlspecialchars((string) __('common.date'), ENT_QUOTES, 'UTF-8'); ?></th>
+        <th><?= htmlspecialchars((string) __('common.note'), ENT_QUOTES, 'UTF-8'); ?></th>
+        <th class="amount-cell"><?= htmlspecialchars((string) __('common.amount'), ENT_QUOTES, 'UTF-8'); ?></th>
+        <th><?= htmlspecialchars((string) __('common.actions'), ENT_QUOTES, 'UTF-8'); ?></th>
       </tr>
     </thead>
     <tbody>
       <?php foreach ($expenses as $expense): ?>
         <tr>
           <td><?= htmlspecialchars((string) $expense->getName(), ENT_QUOTES, 'UTF-8'); ?></td>
-          <td><?= htmlspecialchars((string) ($expense->getCategoryName() ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
+          <td><?= htmlspecialchars((string) localize_category_name((string) ($expense->getCategoryName() ?? '')), ENT_QUOTES, 'UTF-8'); ?></td>
           <td><?= htmlspecialchars((string) $expense->getExpenseDate(), ENT_QUOTES, 'UTF-8'); ?></td>
           <td><?= htmlspecialchars((string) ($expense->getNote() ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
           <td class="amount-cell"><?= htmlspecialchars((string) number_format((float)$expense->getAmount(), 2), ENT_QUOTES, 'UTF-8'); ?></td>
           <td class="actions-cell">
-            <a class="icon-action" href="/expenses/edit?id=<?= htmlspecialchars((string) $expense->getId(), ENT_QUOTES, 'UTF-8'); ?>">Edit</a>
-            <form method="POST" action="/expenses/delete" onsubmit="return confirm('Delete this expense?');">
+            <a class="icon-action" href="/expenses/edit?id=<?= htmlspecialchars((string) $expense->getId(), ENT_QUOTES, 'UTF-8'); ?>"><?= htmlspecialchars((string) __('common.edit'), ENT_QUOTES, 'UTF-8'); ?></a>
+            <form method="POST" action="/expenses/delete" data-confirm-message="<?= htmlspecialchars((string) __('expenses.confirm_delete'), ENT_QUOTES, 'UTF-8'); ?>" onsubmit="return window.confirm(this.dataset.confirmMessage);">
               <input type="hidden" name="csrf_token" value="<?= htmlspecialchars((string) $csrfToken, ENT_QUOTES, 'UTF-8'); ?>" />
               <input type="hidden" name="id" value="<?= htmlspecialchars((string) $expense->getId(), ENT_QUOTES, 'UTF-8'); ?>" />
-              <button class="icon-action danger" type="submit">Delete</button>
+              <button class="icon-action danger" type="submit"><?= htmlspecialchars((string) __('common.delete'), ENT_QUOTES, 'UTF-8'); ?></button>
             </form>
           </td>
         </tr>
@@ -74,18 +74,18 @@
       <article class="expense-card">
         <div>
           <h2><?= htmlspecialchars((string) $expense->getName(), ENT_QUOTES, 'UTF-8'); ?></h2>
-          <p><?= htmlspecialchars((string) ($expense->getCategoryName() ?? ''), ENT_QUOTES, 'UTF-8'); ?> · <?= htmlspecialchars((string) $expense->getExpenseDate(), ENT_QUOTES, 'UTF-8'); ?></p>
+          <p><?= htmlspecialchars((string) localize_category_name((string) ($expense->getCategoryName() ?? '')), ENT_QUOTES, 'UTF-8'); ?> · <?= htmlspecialchars((string) $expense->getExpenseDate(), ENT_QUOTES, 'UTF-8'); ?></p>
         </div>
         <strong><?= htmlspecialchars((string) number_format((float)$expense->getAmount(), 2), ENT_QUOTES, 'UTF-8'); ?></strong>
         <?php if (!empty($expense->getNote())): ?>
           <p><?= htmlspecialchars((string) $expense->getNote(), ENT_QUOTES, 'UTF-8'); ?></p>
         <?php endif; ?>
         <div class="card-actions">
-          <a class="icon-action" href="/expenses/edit?id=<?= htmlspecialchars((string) $expense->getId(), ENT_QUOTES, 'UTF-8'); ?>">Edit</a>
-          <form method="POST" action="/expenses/delete" onsubmit="return confirm('Delete this expense?');">
+          <a class="icon-action" href="/expenses/edit?id=<?= htmlspecialchars((string) $expense->getId(), ENT_QUOTES, 'UTF-8'); ?>"><?= htmlspecialchars((string) __('common.edit'), ENT_QUOTES, 'UTF-8'); ?></a>
+          <form method="POST" action="/expenses/delete" data-confirm-message="<?= htmlspecialchars((string) __('expenses.confirm_delete'), ENT_QUOTES, 'UTF-8'); ?>" onsubmit="return window.confirm(this.dataset.confirmMessage);">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars((string) $csrfToken, ENT_QUOTES, 'UTF-8'); ?>" />
             <input type="hidden" name="id" value="<?= htmlspecialchars((string) $expense->getId(), ENT_QUOTES, 'UTF-8'); ?>" />
-            <button class="icon-action danger" type="submit">Delete</button>
+            <button class="icon-action danger" type="submit"><?= htmlspecialchars((string) __('common.delete'), ENT_QUOTES, 'UTF-8'); ?></button>
           </form>
         </div>
       </article>

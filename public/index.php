@@ -16,6 +16,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+require_once __DIR__.'/../src/helpers.php';
+
 require_once __DIR__.'/../Routing.php';
 
 $path = trim($_SERVER['REQUEST_URI'], '/');
@@ -28,7 +30,7 @@ try {
 
     AppController::renderErrorResponse(
         500,
-        'Application Error',
-        'Wystąpił błąd aplikacji. Spróbuj ponownie później.'
+        __('error.title'),
+        __('error.default_message')
     );
 }

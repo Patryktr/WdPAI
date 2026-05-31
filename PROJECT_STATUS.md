@@ -4,7 +4,7 @@
 
 Projekt jest prostą aplikacją PHP MVC uruchamianą w Dockerze. Obecnie zawiera routing oparty o mapę ścieżek, kontrolery, repozytoria, widoki HTML/PHP, wspólne layouty, konfiguracje nginx/php-fpm/PostgreSQL oraz podstawowe style CSS.
 
-Aktualny etap prac obejmuje działający CRUD wydatków, obsługę rejestracji i logowania użytkownika, sesję PHP, wylogowanie, ochronę stron wymagających zalogowania, kontrolę dozwolonych metod HTTP przez atrybuty PHP 8 oraz panel finansowy dashboardu oparty o dane aktualnego użytkownika. Część sekcji aplikacji nadal pozostaje placeholderami do dalszej rozbudowy.
+Aktualny etap prac obejmuje działający CRUD wydatków i kategorii, obsługę rejestracji i logowania użytkownika, sesję PHP, wylogowanie, ochronę stron wymagających zalogowania, kontrolę dozwolonych metod HTTP przez atrybuty PHP 8, zabezpieczenia CSRF, limitowanie nieudanych prób logowania, panel dashboardu oraz sekcje statystyk i profilu oparte o dane aktualnego użytkownika.
 
 ## Środowisko Docker
 
@@ -89,7 +89,10 @@ Aktualny etap prac obejmuje działający CRUD wydatków, obsługę rejestracji i
 - `public/views/layouts/auth.php` jest layoutem dla logowania i rejestracji.
 - `src/controllers/SecurityController.php` obsługuje logowanie, rejestrację, zapis użytkownika, weryfikację hasła, zapis danych użytkownika do sesji i wylogowanie.
 - `src/controllers/ExpensesController.php` obsługuje listę, dodawanie, edycję i usuwanie wydatków oraz zapewnia domyślne kategorie dla aktualnego użytkownika.
+- `src/controllers/CategoriesController.php` obsługuje listę, dodawanie, edycję i usuwanie kategorii użytkownika.
 - `src/controllers/DashboardController.php` renderuje panel finansowy z metrykami wydatków aktualnego użytkownika.
+- `src/controllers/StatisticsController.php` renderuje statystyki wydatków i przygotowuje dane wykresów.
+- `src/controllers/ProfileController.php` renderuje profil użytkownika i obsługuje zmianę hasła.
 - `Database.php` tworzy połączenie PDO z PostgreSQL.
 
 ## Aktualne ścieżki routingu
@@ -173,6 +176,23 @@ Domyślne kategorie są automatycznie tworzone dla użytkownika przy wejściu w 
 - Travel
 - Other
 
+## CRUD kategorii
+
+Zaimplementowane funkcje:
+
+- lista kategorii użytkownika z podsumowaniem (liczba wydatków, suma)
+- dodanie kategorii
+- edycja kategorii
+- usunięcie kategorii niestandardowej
+- blokada usuwania kategorii bazowych (`is_default`)
+- blokada usuwania kategorii z przypisanymi wydatkami
+
+Walidacja:
+
+- `name` jest wymagane i musi mieć od `2` do `50` znaków
+- `icon` może mieć maksymalnie `30` znaków
+- `color` może mieć maksymalnie `20` znaków
+
 ## Dashboard finansowy
 
 `/dashboard` pokazuje panel w stylu dark fintech oparty o dane aktualnego użytkownika:
@@ -188,6 +208,30 @@ Domyślne kategorie są automatycznie tworzone dla użytkownika przy wejściu w 
 
 Dane dashboardu są pobierane z `ExpensesRepository` wyłącznie dla `$_SESSION['user_id']`.
 
+## Statystyki
+
+`/statistics` pokazuje statystyki użytkownika oparte o dane z repozytorium:
+
+- łączna suma wydatków
+- średnia kwota wydatku
+- liczba wszystkich wydatków
+- największa kategoria
+- miesięczne podsumowanie (kwota i liczba wydatków)
+- podsumowanie kategorii
+
+Dane dla wykresów miesięcznych i kategorii są serializowane do JSON w `StatisticsController`.
+
+## Profil użytkownika
+
+`/profile` pokazuje dane bieżącego użytkownika oraz formularz zmiany hasła.
+
+Zmiana hasła obejmuje:
+
+- walidację aktualnego hasła
+- walidację długości nowego hasła (minimum `8` znaków)
+- walidację zgodności pól nowego hasła
+- zapis nowego hasła po hashowaniu `password_hash(..., PASSWORD_BCRYPT)`
+
 ## Logowanie, rejestracja i sesja
 
 Zaimplementowane funkcje:
@@ -200,6 +244,8 @@ Zaimplementowane funkcje:
 - pobranie użytkownika przez `UsersRepository::getUserByEmail()`
 - sprawdzanie aktywności użytkownika przez `is_active`
 - weryfikacja hasła przez `password_verify()`
+- ochrona formularzy przez walidację tokenu CSRF
+- limit nieudanych prób logowania (`5` prób, blokada na `60` sekund)
 - regeneracja ID sesji po poprawnym logowaniu
 - zapis danych użytkownika do `$_SESSION`
 - wylogowanie przez wyczyszczenie `$_SESSION`, usunięcie cookie sesyjnego i `session_destroy()`
@@ -240,7 +286,7 @@ Strony chronione przez `requireLogin()`:
 - użytkownika demo
 - podstawowe kategorie demo dla użytkownika `1`
 
-W działającym lokalnym kontenerze PostgreSQL tabele `categories` i `expenses` zostały również utworzone ręcznie przez migrację SQL, ponieważ `init.sql` wykonuje się automatycznie tylko przy inicjalizacji pustej bazy.
+Skrypt zawiera również ograniczenia i relacje, m.in. `UNIQUE (user_id, name)` dla kategorii oraz `CHECK (amount > 0)` dla wydatków.
 
 ## Repozytoria
 
@@ -271,6 +317,9 @@ W działającym lokalnym kontenerze PostgreSQL tabele `categories` i `expenses` 
 - `getMonthlyTotalByUserId(int $userId): float`
 - `getMonthlyCountByUserId(int $userId): int`
 - `getTotalByUserId(int $userId): float`
+- `getAverageExpenseByUserId(int $userId): float`
+- `getExpensesCountByUserId(int $userId): int`
+- `getMonthlySummaryByUserId(int $userId): array`
 - `getBiggestExpenseByUserId(int $userId): ?array`
 - `getCategorySummaryByUserId(int $userId): array`
 - `getExpensesByUserId(int $userId, array $filters = []): array`
@@ -300,13 +349,13 @@ Repozytoria używają zapytań przygotowanych PDO.
 
    Nowy mechanizm `AllowedMethods` został sprawdzony ręcznie, ale warto dodać testy regresji dla tras `GET`/`POST` i odpowiedzi `405`.
 
-2. Dashboard wymaga dalszego rozwoju
-
-   `/dashboard` pokazuje już metryki wydatków użytkownika, ale wykres trendu jest nadal statycznym elementem UI.
-
-3. Brak testów automatycznych dla auth
+2. Brak testów automatycznych dla auth
 
    Logowanie, rejestracja, sesja, CSRF i ochrona tras wymagają jeszcze pokrycia testami lub ręcznej checklisty regresji.
+
+3. Brak testów automatycznych dla CRUD i statystyk
+
+   CRUD wydatków/kategorii, profile oraz agregacje statystyczne działają, ale wymagają testów integracyjnych i regresyjnych.
 
 ## Uwagi
 

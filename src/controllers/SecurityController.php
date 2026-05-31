@@ -10,12 +10,12 @@ class SecurityController extends AppController {
     #[AllowedMethods('GET', 'POST')]
     public function login() {
         if ($this->isGet()) {
-            $this->render("login", ["_layout" => "auth", "title" => "Login"]);
+            $this->render("login", ["_layout" => "auth", "title" => __('auth.login')]);
             return;
         }
 
         if (!$this->isPost()) {
-            $this->render("login", ["_layout" => "auth", "title" => "Login"]);
+            $this->render("login", ["_layout" => "auth", "title" => __('auth.login')]);
             return;
         }
 
@@ -24,8 +24,8 @@ class SecurityController extends AppController {
             return;
         }
 
-        $loginError = 'Email lub hasło jest niepoprawne.';
-        $lockoutMessage = 'Zbyt wiele nieudanych prób. Spróbuj ponownie za chwilę.';
+        $loginError = __('auth.invalid_credentials');
+        $lockoutMessage = __('auth.too_many_attempts');
 
         if ($this->isLoginLocked()) {
             $this->renderLoginWithMessage($lockoutMessage);
@@ -84,12 +84,12 @@ class SecurityController extends AppController {
     #[AllowedMethods('GET', 'POST')]
     public function register() {
         if ($this->isGet()) {
-            $this->render("register", ["_layout" => "auth", "title" => "Register"]);
+            $this->render("register", ["_layout" => "auth", "title" => __('auth.register')]);
             return;
         }
 
         if (!$this->isPost()) {
-            $this->render("register", ["_layout" => "auth", "title" => "Register"]);
+            $this->render("register", ["_layout" => "auth", "title" => __('auth.register')]);
             return;
         }
 
@@ -220,7 +220,7 @@ class SecurityController extends AppController {
     {
         $this->render("register", [
             "_layout" => "auth",
-            "title" => "Register",
+            "title" => __('auth.register'),
             "messages" => $message,
             "form" => [
                 "username" => $username,
@@ -234,7 +234,7 @@ class SecurityController extends AppController {
     {
         $this->render("login", [
             "_layout" => "auth",
-            "title" => "Login",
+            "title" => __('auth.login'),
             "messages" => $message,
         ]);
     }

@@ -10,7 +10,7 @@ class DashboardController extends AppController {
         $this->requireLogin();
 
         $userId = $this->currentUserId();
-        $title = "Dashboard";
+        $title = __('dashboard.title');
         $expensesRepository = new ExpensesRepository();
         $categorySummary = $expensesRepository->getCategorySummaryByUserId($userId);
         $biggestCategory = null;

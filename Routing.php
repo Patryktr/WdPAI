@@ -8,6 +8,7 @@ require_once __DIR__.'/src/controllers/ExpensesController.php';
 require_once __DIR__.'/src/controllers/CategoriesController.php';
 require_once __DIR__.'/src/controllers/StatisticsController.php';
 require_once __DIR__.'/src/controllers/ProfileController.php';
+require_once __DIR__.'/src/controllers/LanguageController.php';
 
 class Routing {
 
@@ -68,6 +69,10 @@ class Routing {
             "controller" => "ProfileController",
             "action" => "index",
         ],
+        "language" => [
+            "controller" => "LanguageController",
+            "action" => "set",
+        ],
     ];
 
     public static function run(string $path): void
@@ -75,8 +80,8 @@ class Routing {
         if (!array_key_exists($path, self::$routes)) {
             AppController::renderErrorResponse(
                 404,
-                'Not Found',
-                'Nie znaleziono wybranej strony.',
+                __('error.404_title'),
+                __('error.404_message'),
                 'app'
             );
             return;
@@ -103,8 +108,8 @@ class Routing {
 
         AppController::renderErrorResponse(
             405,
-            'Method Not Allowed',
-            'Ta metoda HTTP nie jest dozwolona dla wybranej akcji.',
+            __('error.405_title'),
+            __('error.405_message'),
             'app'
         );
     }

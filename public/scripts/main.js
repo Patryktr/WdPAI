@@ -179,7 +179,16 @@ const renderCategoryShareChart = () => {
   chart.append(shareBar, legend);
 };
 
+const renderCategoryMeters = () => {
+  document.querySelectorAll('[data-meter-width]').forEach((node) => {
+    const rawValue = Number(node.getAttribute('data-meter-width') || 0);
+    const width = Math.max(0, Math.min(100, rawValue));
+    node.style.width = `${width}%`;
+  });
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   renderMonthlyChart();
   renderCategoryShareChart();
+  renderCategoryMeters();
 });
